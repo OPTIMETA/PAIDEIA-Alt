@@ -4,6 +4,7 @@ import { Activity, Map as MapIcon, Radar, Scissors } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DecisionMap } from "@/viz/DecisionMap";
+import { TriageSession } from "@/flows/TriageSession";
 import { hasAltRuntime } from "@/alt/client";
 import { getTopics, setTopics as saveTopics } from "@/alt/storage";
 import { runtimeSpike } from "@/alt/ai";
@@ -22,6 +23,7 @@ export default function App() {
   const isAlt = useMemo(() => hasAltRuntime(), []);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [spike, setSpike] = useState<string | null>(null);
+  const [sessionOpen, setSessionOpen] = useState(false);
   const courseId = DEMO_COURSE_ID;
 
   useEffect(() => {
@@ -54,6 +56,31 @@ export default function App() {
               }
             : tp,
         );
+        void saveTopics(courseId, next);
+        return next;
+      });
+    },
+    [courseId],
+  );
+
+  // 오늘의 컷: 한 번의 선택 = 자신감 + triage
+  const handleRate = useCallback(
+    (id: string, confidence: number) => {
+      setTopics((prev) => {
+        const next = prev.map((tp) =>
+          tp.id === id ? { ...tp, confidence, triage: triageFor(tp.examProb, confidence) } : tp,
+        );
+        void saveTopics(courseId, next);
+        return next;
+      });
+    },
+    [courseId],
+  );
+
+  const handleDrop = useCallback(
+    (id: string) => {
+      setTopics((prev) => {
+        const next = prev.map((tp) => (tp.id === id ? { ...tp, triage: "drop" as const } : tp));
         void saveTopics(courseId, next);
         return next;
       });
@@ -94,7 +121,8 @@ export default function App() {
             {NAV.map((item) => (
               <div
                 key={item.label}
-                className="flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm"
+                onClick={() => item.label === "오늘의 컷" && setSessionOpen(true)}
+                className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm"
                 style={
                   item.active
                     ? { background: "var(--accent-soft)", color: "var(--accent-1)" }
@@ -129,7 +157,9 @@ export default function App() {
             <Button variant="ghost" size="sm" onClick={runSpike} disabled={!isAlt}>
               <Activity className="size-4" /> 스파이크
             </Button>
-            <Button size="sm">작전지도</Button>
+            <Button size="sm" onClick={() => setSessionOpen(true)}>
+              <Scissors className="size-4" /> 오늘의 컷
+            </Button>
           </div>
         </header>
 
@@ -141,6 +171,14 @@ export default function App() {
               <div className="pointer-events-none absolute inset-0 grid place-items-center">
                 <p className="text-sm text-muted-foreground">강의를 연결하면 토픽이 채워집니다.</p>
               </div>
+            ) : null}
+            {sessionOpen ? (
+              <TriageSession
+                topics={topics.filter((tp) => tp.triage !== "drop")}
+                onRate={handleRate}
+                onDrop={handleDrop}
+                onClose={() => setSessionOpen(false)}
+              />
             ) : null}
           </div>
         </div>
