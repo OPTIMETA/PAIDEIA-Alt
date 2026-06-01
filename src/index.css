@@ -106,7 +106,6 @@ body {
   color: var(--foreground);
   font-family: "DM Sans", "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
   font-weight: 300; /* NODEPROMPT: 가는체 기본 */
-  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -123,7 +122,14 @@ input,
 textarea,
 select {
   font: inherit;
-  letter-spacing: inherit;
+}
+
+/* 자간 -5% 전역 통일 — em을 각 요소에서 해석해 폰트 크기별 동일 비율(-0.05em)로 적용.
+   @layer base 안에 두어 필요 시 tracking-* 유틸리티로 개별 override 가능. */
+@layer base {
+  * {
+    letter-spacing: -0.05em;
+  }
 }
 
 /* NODEPROMPT 슬라이더: 작은 검정 원형 thumb */

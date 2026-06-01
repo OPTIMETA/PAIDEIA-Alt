@@ -291,7 +291,7 @@ export default function App() {
           </div>
         </div>
 
-        <p className="mb-1.5 px-1 text-xs font-normal uppercase tracking-wider text-muted-foreground">
+        <p className="mb-1.5 px-1 text-xs font-normal uppercase text-muted-foreground">
           코스
         </p>
         <nav className="flex-1 space-y-0.5 overflow-auto">
@@ -344,7 +344,7 @@ export default function App() {
               <span className="hidden max-w-[160px] truncate text-sm text-muted-foreground lg:inline">
                 {courseName}
               </span>
-              <span className="text-2xl font-normal tabular-nums tracking-tight">
+              <span className="text-2xl font-normal tabular-nums">
                 {dDay(examDate)}
               </span>
               <span className="hidden text-xs text-muted-foreground lg:inline">
