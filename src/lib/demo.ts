@@ -36,3 +36,16 @@ export const demoExamPoints: ExamPoint[] = [
   { source: "transcript", quote: "크라메르 공식은 참고만, 시험엔 거의 안 냅니다.", noteId: 1, timestampMs: 2400000, topicId: "t12", weight: 0.15 },
   { source: "transcript", quote: "직교대각화, 이번에 새로 강조하는 부분입니다.", noteId: 6, timestampMs: 540000, topicId: "t14", weight: 0.7 },
 ];
+
+// "강의 추가(데모)" 시 병합되는 7강 — 반복 토픽(대각화)은 examProb 상향, 신규 2개는 추가.
+// Accrue(코스가 자란다)와 성장 diff를 Alt 없이 시연하기 위한 시드.
+export const demoExtraTopics: Topic[] = [
+  { id: "x1", name: "대각화", examProb: 0.6, confidence: null, triage: "unrated", posOverride: null, appearsInNoteIds: [7] },
+  { id: "x2", name: "케일리-해밀턴 정리", examProb: 0.76, confidence: null, triage: "unrated", posOverride: null, appearsInNoteIds: [7] },
+  { id: "x3", name: "조던 표준형", examProb: 0.54, confidence: null, triage: "unrated", posOverride: null, appearsInNoteIds: [7] },
+];
+
+export const demoExtraExamPoints: ExamPoint[] = [
+  { source: "transcript", quote: "케일리-해밀턴은 증명 과정까지 물어볼 수 있습니다.", noteId: 7, timestampMs: 300000, topicId: "x2", weight: 0.8 },
+  { source: "transcript", quote: "대각화, 다시 강조하지만 이건 무조건 나옵니다.", noteId: 7, timestampMs: 95000, topicId: "t1", weight: 0.9 },
+];

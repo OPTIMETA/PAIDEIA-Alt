@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, Plus, Radar, Scissors } from "lucide-react";
+import { Activity, Eye, Plus, Radar, Scissors, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,21 @@ import { TriageSession } from "@/flows/TriageSession";
 import { OpsMap } from "@/flows/OpsMap";
 import { NewCourse } from "@/flows/NewCourse";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
-import { hasAltRuntime } from "@/alt/client";
-import { getExamPoints, getTopics, setTopics as saveTopics } from "@/alt/storage";
+import { alt, hasAltRuntime } from "@/alt/client";
+import {
+  getExamPoints,
+  getTopics,
+  setExamPoints as saveExamPoints,
+  setTopics as saveTopics,
+} from "@/alt/storage";
 import { createCourse, ensureSeedCourse, listCourses, type CourseRef } from "@/alt/courses";
+import { collectCourse } from "@/pipeline/collect";
+import { mergeTopics } from "@/pipeline/ingest";
 import { runtimeSpike } from "@/alt/ai";
 import { budgetCut, totalCostMin } from "@/lib/budget";
 import { dDay, triageFor } from "@/lib/triage";
 import { t } from "@/lib/i18n";
+import { demoExtraExamPoints, demoExtraTopics } from "@/lib/demo";
 import type { ExamPoint, Lecture, Topic } from "@/lib/schemas";
 
 export default function App() {
@@ -29,6 +37,8 @@ export default function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [budget, setBudget] = useState<number | null>(null);
   const [spike, setSpike] = useState<string | null>(null);
+  const [gapMode, setGapMode] = useState(false);
+  const [growth, setGrowth] = useState<string | null>(null);
 
   // 코스 목록 로드 (없으면 데모 시드)
   useEffect(() => {
@@ -70,6 +80,15 @@ export default function App() {
   const total = useMemo(() => totalCostMin(topics), [topics]);
   const { cut, savedMin } = useMemo(() => budgetCut(topics, budget), [topics, budget]);
   const goldCount = topics.filter((tp) => tp.triage === "gold").length;
+  // Taught vs Tested 렌즈: 시험신호(examPoint) 없는 토픽 = 가르쳤지만 시험낼 신호 없음
+  const noSignalIds = useMemo(
+    () =>
+      new Set(
+        topics.filter((tp) => !examPoints.some((p) => p.topicId === tp.id)).map((tp) => tp.id),
+      ),
+    [topics, examPoints],
+  );
+  const dimmedIds = gapMode ? noSignalIds : cut;
 
   const selectedTopic = topics.find((tp) => tp.id === selectedId) ?? null;
   const selectedPoints = useMemo(
@@ -138,6 +157,56 @@ export default function App() {
     },
     [],
   );
+
+  // 수집(Accrue) — Alt: 연결 강의 ingest. 성장 diff 표시.
+  const handleCollect = useCallback(async () => {
+    if (!activeId) return;
+    try {
+      const res = await collectCourse(activeId);
+      setTopics(res.topics);
+      setExamPoints(res.examPoints);
+      setGrowth(`강의 ${res.ingested}개 수집`);
+      window.setTimeout(() => setGrowth(null), 4000);
+    } catch (e) {
+      setSpike(e instanceof Error ? e.message : String(e));
+    }
+  }, [activeId]);
+
+  // 프리뷰: 데모 강의 병합으로 Accrue(코스가 자란다) + 성장 diff 시연
+  const handleDemoGrow = useCallback(() => {
+    const existing = new Set(topics.map((tp) => tp.name));
+    const delta = demoExtraTopics.filter((tp) => !existing.has(tp.name)).length;
+    setTopics((prev) => {
+      const next = mergeTopics(prev, demoExtraTopics);
+      persist(next);
+      return next;
+    });
+    setExamPoints((prev) => {
+      const next = [...prev, ...demoExtraExamPoints];
+      if (activeId) void saveExamPoints(activeId, next);
+      return next;
+    });
+    setGrowth(`+${delta} 토픽`);
+    window.setTimeout(() => setGrowth(null), 4000);
+  }, [topics, persist, activeId]);
+
+  // transcriptUpdated 구독 → 재수집 (Accrue, Alt 전용)
+  useEffect(() => {
+    if (!hasAltRuntime() || !activeId) return;
+    let unsub: (() => Promise<void>) | null = null;
+    void (async () => {
+      try {
+        unsub = await alt.events.subscribe("transcriptUpdated", () => {
+          void handleCollect();
+        });
+      } catch {
+        /* noop */
+      }
+    })();
+    return () => {
+      if (unsub) void unsub();
+    };
+  }, [activeId, handleCollect]);
 
   const runSpike = useCallback(async () => {
     try {
@@ -209,6 +278,11 @@ export default function App() {
             <span className="text-xs text-muted-foreground">
               {topics.length} 토픽 · 골드존 {goldCount}
             </span>
+            {growth ? (
+              <span className="text-xs font-semibold" style={{ color: "var(--accent-1)" }}>
+                ↑ {growth}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-4">
@@ -235,6 +309,17 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-2">
+              <Button
+                variant={gapMode ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setGapMode((v) => !v)}
+                title="가르친 것 vs 시험낼 것 (시험신호 없는 토픽 흐리게)"
+              >
+                <Eye className="size-4" /> 갭
+              </Button>
+              <Button variant="ghost" size="sm" onClick={isAlt ? handleCollect : handleDemoGrow}>
+                <Sparkles className="size-4" /> {isAlt ? "수집" : "데모 강의"}
+              </Button>
               <Button variant="ghost" size="sm" onClick={runSpike} disabled={!isAlt}>
                 <Activity className="size-4" /> 스파이크
               </Button>
@@ -254,7 +339,7 @@ export default function App() {
               topics={topics}
               onChange={handleChange}
               onSelect={setSelectedId}
-              dimmedIds={cut}
+              dimmedIds={dimmedIds}
             />
             {topics.length === 0 ? (
               <div className="pointer-events-none absolute inset-0 grid place-items-center">
