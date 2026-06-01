@@ -44,6 +44,14 @@ function toStorage(value: unknown): PluginStorageValue {
   return JSON.parse(JSON.stringify(value)) as PluginStorageValue;
 }
 
+// 코스 비종속 UI 플래그(ui:*) — 온보딩 1회 표시 등
+export async function getUiFlag(key: string): Promise<boolean> {
+  return (await kvGet(`ui:${key}`)) === true;
+}
+export async function setUiFlag(key: string, value: boolean): Promise<void> {
+  await kvSet(`ui:${key}`, value);
+}
+
 const K = {
   index: "course:index",
   meta: (id: string) => `course:${id}:meta`,

@@ -11,6 +11,7 @@ export function OpsMap({
   savedMin,
   examDate,
   courseName,
+  signalCounts,
   onClose,
 }: {
   topics: Topic[];
@@ -18,6 +19,7 @@ export function OpsMap({
   savedMin: number;
   examDate: string | null;
   courseName: string;
+  signalCounts?: ReadonlyMap<string, number>;
   onClose: () => void;
 }) {
   const now = topics
@@ -74,6 +76,11 @@ export function OpsMap({
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span className="flex-1 font-normal">{t.name}</span>
+                {(signalCounts?.get(t.id) ?? 0) > 0 ? (
+                  <span className="text-xs" title="교수 강조">
+                    🎙
+                  </span>
+                ) : null}
                 <span className="text-xs text-muted-foreground">{Math.round(t.examProb * 100)}%</span>
               </div>
             ))

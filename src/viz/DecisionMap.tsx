@@ -31,6 +31,7 @@ type Props = {
   onChange?: (id: string, patch: { examProb: number; confidence: number | null }) => void;
   onSelect?: (id: string) => void;
   dimmedIds?: ReadonlySet<string>;
+  signalCounts?: ReadonlyMap<string, number>;
 };
 
 const PAD_X = 96;
@@ -71,7 +72,7 @@ function invert(x: number, y: number, w: number, h: number) {
   return { examProb, confidence };
 }
 
-export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
+export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCounts }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dimsRef = useRef({ w: 960, h: 600 });
@@ -308,7 +309,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
   }
 
   return (
-    <div ref={wrapRef} className="h-full w-full">
+    <div ref={wrapRef} className="relative h-full w-full">
       <svg
         ref={svgRef}
         width="100%"
@@ -334,7 +335,6 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
 
         {/* 모서리 라벨 (faint, 노드 영역 밖) */}
         <g fontSize={12} fill="var(--fg-700)">
-          <text x={PAD_X - 14} y={PAD_TOP - 18}>자신감 ↑</text>
           <text x={w - PAD_X + 14} y={ratedBottom + 26} textAnchor="end">시험확률 →</text>
           <text x={w - PAD_X + 10} y={PAD_TOP - 2} textAnchor="end">유지만</text>
           <text x={PAD_X - 10} y={PAD_TOP - 2}>이미 안전</text>
@@ -388,6 +388,11 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
                 stroke={n.hot ? "none" : "rgba(0,0,0,0.18)"}
                 strokeWidth={1}
               />
+              {signalCounts && (signalCounts.get(n.id) ?? 0) > 0 ? (
+                <text x={n.r * 0.78} y={-n.r * 0.78 + 3} fontSize={9} textAnchor="middle">
+                  🎙
+                </text>
+              ) : null}
             </g>
           );
         })}
@@ -420,6 +425,16 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
           );
         })}
       </svg>
+
+      {/* 범례 — 사분면·신호 의미 (NODEPROMPT 미니멀) */}
+      <div className="pointer-events-none absolute left-3 top-2.5 text-[10px] leading-relaxed text-muted-foreground">
+        <div>
+          <b className="text-foreground">X →</b> 시험확률(교수 발화·반복) · <b className="text-foreground">Y ↑</b> 자신감
+        </div>
+        <div>
+          <span style={{ color: "var(--accent-1)" }}>●</span> 골드존 = 지금 할 것 · 🎙 교수 강조
+        </div>
+      </div>
     </div>
   );
 }

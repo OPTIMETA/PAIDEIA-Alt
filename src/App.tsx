@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, Eye, Plus, Radar, Scissors, Sparkles } from "lucide-react";
+import { Eye, Plus, Radar, Scissors, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,22 +7,24 @@ import { DecisionMap } from "@/viz/DecisionMap";
 import { TriageSession } from "@/flows/TriageSession";
 import { OpsMap } from "@/flows/OpsMap";
 import { NewCourse } from "@/flows/NewCourse";
+import { Welcome } from "@/flows/Welcome";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { alt, hasAltRuntime } from "@/alt/client";
 import {
   getExamPoints,
   getTopics,
+  getUiFlag,
   setExamPoints as saveExamPoints,
   setTopics as saveTopics,
+  setUiFlag,
 } from "@/alt/storage";
 import { createCourse, ensureSeedCourse, listCourses, type CourseRef } from "@/alt/courses";
 import { collectCourse } from "@/pipeline/collect";
 import { mergeTopics } from "@/pipeline/ingest";
-import { runtimeSpike } from "@/alt/ai";
 import { budgetCut, totalCostMin } from "@/lib/budget";
 import { dDay, triageFor } from "@/lib/triage";
 import { t } from "@/lib/i18n";
-import { demoExtraExamPoints, demoExtraTopics } from "@/lib/demo";
+import { DEMO_COURSE_ID, demoExtraExamPoints, demoExtraTopics } from "@/lib/demo";
 import type { ExamPoint, Lecture, Topic } from "@/lib/schemas";
 
 export default function App() {
@@ -36,10 +38,11 @@ export default function App() {
   const [opsOpen, setOpsOpen] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [budget, setBudget] = useState<number | null>(null);
-  const [spike, setSpike] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [gapMode, setGapMode] = useState(false);
   const [growth, setGrowth] = useState<string | null>(null);
   const [collecting, setCollecting] = useState(false);
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   // 코스 목록 로드 (없으면 데모 시드)
   useEffect(() => {
@@ -50,6 +53,7 @@ export default function App() {
       if (!alive) return;
       setCourses(cs);
       setActiveId((cur) => cur ?? cs[0]?.id ?? null);
+      if (!(await getUiFlag("welcomed"))) setWelcomeOpen(true);
     })();
     return () => {
       alive = false;
@@ -90,6 +94,23 @@ export default function App() {
     [topics, examPoints],
   );
   const dimmedIds = gapMode ? noSignalIds : cut;
+  const allUnrated = topics.length > 0 && topics.every((tp) => tp.confidence === null);
+
+  // 토픽별 교수 발화 신호(증거) — 가중치 내림차순
+  const pointsByTopic = useMemo(() => {
+    const m = new Map<string, ExamPoint[]>();
+    for (const p of examPoints) {
+      const arr = m.get(p.topicId) ?? [];
+      arr.push(p);
+      m.set(p.topicId, arr);
+    }
+    for (const arr of m.values()) arr.sort((a, b) => b.weight - a.weight);
+    return m;
+  }, [examPoints]);
+  const signalCounts = useMemo(
+    () => new Map([...pointsByTopic].map(([k, v]) => [k, v.length] as const)),
+    [pointsByTopic],
+  );
 
   const selectedTopic = topics.find((tp) => tp.id === selectedId) ?? null;
   const selectedPoints = useMemo(
@@ -158,7 +179,7 @@ export default function App() {
         setWizardOpen(false);
       } catch (e) {
         // 조용한 실패 방지 — 저장 키/값 오류 등을 표면화
-        setSpike(`코스 생성 실패: ${e instanceof Error ? e.message : String(e)}`);
+        setStatus(`코스 생성 실패: ${e instanceof Error ? e.message : String(e)}`);
       }
     },
     [],
@@ -169,7 +190,7 @@ export default function App() {
     async (noteId?: number) => {
       if (!activeId) return;
       setCollecting(true);
-      setSpike(null);
+      setStatus(null);
       try {
         // noteId 지정(transcriptUpdated) → 그 노트만 재수집(이미 ingested여도). 없으면 pending 전체.
         const res = await collectCourse(activeId, noteId);
@@ -188,9 +209,9 @@ export default function App() {
           parts.push(`${res.skippedNoTranscript}개는 트랜스크립트가 비어 건너뜀.`);
         if (res.errors.length > 0) parts.push(`실패 ${res.errors.length}건 — ${res.errors[0].message}`);
         if (parts.length === 0) parts.push("새로 수집할 강의가 없습니다(이미 수집됨).");
-        setSpike(parts.join(" "));
+        setStatus(parts.join(" "));
       } catch (e) {
-        setSpike(`수집 실패: ${e instanceof Error ? e.message : String(e)}`);
+        setStatus(`수집 실패: ${e instanceof Error ? e.message : String(e)}`);
       } finally {
         setCollecting(false);
       }
@@ -234,13 +255,10 @@ export default function App() {
     };
   }, [activeId, handleCollect]);
 
-  const runSpike = useCallback(async () => {
-    try {
-      const r = await runtimeSpike();
-      setSpike(`models ${r.models.length} · tooled ${r.structuredModel ?? "—"}`);
-    } catch (e) {
-      setSpike(e instanceof Error ? e.message : String(e));
-    }
+  // 첫 실행 환영 닫기(+영속)
+  const dismissWelcome = useCallback(() => {
+    setWelcomeOpen(false);
+    void setUiFlag("welcomed", true);
   }, []);
 
   return (
@@ -276,6 +294,9 @@ export default function App() {
               }
             >
               <span className="flex-1 truncate">{c.meta.name}</span>
+              {c.id === DEMO_COURSE_ID ? (
+                <span className="rounded border px-1 text-[9px] text-muted-foreground">예시</span>
+              ) : null}
               <span className="text-[10px] text-muted-foreground">{dDay(c.meta.examDate)}</span>
             </div>
           ))}
@@ -354,13 +375,14 @@ export default function App() {
                 <Sparkles className="size-4" />{" "}
                 {collecting ? "수집 중…" : isAlt ? "수집" : "데모 강의"}
               </Button>
-              <Button variant="ghost" size="sm" onClick={runSpike} disabled={!isAlt}>
-                <Activity className="size-4" /> 스파이크
-              </Button>
               <Button variant="secondary" size="sm" onClick={() => setOpsOpen(true)}>
                 작전지도
               </Button>
-              <Button size="sm" onClick={() => setSessionOpen(true)}>
+              <Button
+                size="sm"
+                onClick={() => setSessionOpen(true)}
+                className={allUnrated ? "animate-pulse" : undefined}
+              >
                 <Scissors className="size-4" /> 오늘의 컷
               </Button>
             </div>
@@ -374,12 +396,21 @@ export default function App() {
               onChange={handleChange}
               onSelect={setSelectedId}
               dimmedIds={dimmedIds}
+              signalCounts={signalCounts}
             />
             {topics.length === 0 ? (
-              <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                <p className="text-sm text-muted-foreground">
-                  강의를 연결하면 토픽이 채워집니다.
+              <div className="pointer-events-none absolute inset-0 grid place-items-center px-8 text-center">
+                <p className="max-w-sm text-sm text-muted-foreground">
+                  이 코스에 <b className="text-foreground">강의 녹음</b>을 연결하고{" "}
+                  <b className="text-foreground">수집</b>하면, 교수가 강조한 시험 핫존이 채워집니다.
                 </p>
+              </div>
+            ) : allUnrated ? (
+              <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
+                <div className="frost rounded-full border px-4 py-1.5 text-xs text-muted-foreground">
+                  {topics.length}개 토픽 수집됨 · <b className="text-foreground">오늘의 컷</b>으로
+                  분류하면 골드존이 나타납니다 →
+                </div>
               </div>
             ) : null}
 
@@ -394,6 +425,7 @@ export default function App() {
             {sessionOpen ? (
               <TriageSession
                 topics={topics.filter((tp) => tp.triage !== "drop")}
+                pointsByTopic={pointsByTopic}
                 onRate={handleRate}
                 onDrop={handleDrop}
                 onClose={() => setSessionOpen(false)}
@@ -407,6 +439,7 @@ export default function App() {
                 savedMin={savedMin}
                 examDate={examDate}
                 courseName={courseName}
+                signalCounts={signalCounts}
                 onClose={() => setOpsOpen(false)}
               />
             ) : null}
@@ -417,12 +450,12 @@ export default function App() {
           </div>
         </div>
 
-        {spike ? (
+        {status ? (
           <div className="flex items-center justify-between gap-3 border-t px-6 py-2 text-xs text-muted-foreground">
-            <span>{spike}</span>
+            <span>{status}</span>
             <button
               type="button"
-              onClick={() => setSpike(null)}
+              onClick={() => setStatus(null)}
               className="shrink-0 transition-colors hover:text-foreground"
             >
               닫기
@@ -430,6 +463,16 @@ export default function App() {
           </div>
         ) : null}
       </div>
+
+      {welcomeOpen ? (
+        <Welcome
+          onNewCourse={() => {
+            dismissWelcome();
+            setWizardOpen(true);
+          }}
+          onClose={dismissWelcome}
+        />
+      ) : null}
     </div>
   );
 }

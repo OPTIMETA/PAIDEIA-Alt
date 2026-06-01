@@ -3,20 +3,22 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Topic } from "@/lib/schemas";
+import type { ExamPoint, Topic } from "@/lib/schemas";
 
 type Props = {
   topics: Topic[];
+  pointsByTopic?: ReadonlyMap<string, ExamPoint[]>;
   onRate: (id: string, confidence: number) => void;
   onDrop: (id: string) => void;
   onClose: () => void;
 };
 
-export function TriageSession({ topics, onRate, onDrop, onClose }: Props) {
+export function TriageSession({ topics, pointsByTopic, onRate, onDrop, onClose }: Props) {
   const queue = useMemo(() => [...topics].sort((a, b) => b.examProb - a.examProb), [topics]);
   const [i, setI] = useState(0);
   const cur = queue[i];
   const done = i >= queue.length;
+  const topPoint = cur ? pointsByTopic?.get(cur.id)?.[0] : undefined;
 
   const rate = (confidence: number) => {
     if (cur) onRate(cur.id, confidence);
@@ -63,6 +65,11 @@ export function TriageSession({ topics, onRate, onDrop, onClose }: Props) {
                 시험확률 {Math.round(cur.examProb * 100)}%
               </p>
               <p className="text-2xl font-normal">{cur.name}</p>
+              {topPoint ? (
+                <p className="mx-auto mt-3 max-w-sm text-xs leading-relaxed text-muted-foreground">
+                  🎙 “{topPoint.quote}”
+                </p>
+              ) : null}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={() => rate(3)}>
