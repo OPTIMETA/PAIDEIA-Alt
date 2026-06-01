@@ -62,9 +62,9 @@
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: rgba(255, 255, 255, 0.14);
 
-  /* 반투명 (Codex 사이드바 / 탑바) */
-  --glass-bg: rgba(20, 20, 22, 0.68);
-  --glass-blur: 24px;
+  /* 반투명 (Codex 사이드바 / 탑바) — 투명도를 높여 글래스가 보이게 */
+  --glass-bg: rgba(18, 18, 20, 0.55);
+  --glass-blur: 26px;
 
   /* 절제된 단일 accent (focus · active · 골드존). 한 줄로 교체 가능. */
   --accent-1: #10a37f;
@@ -76,7 +76,7 @@
   /* shadcn role 매핑 (dark) */
   --background: var(--cod-1000);
   --foreground: var(--fg-100);
-  --card: rgba(23, 23, 26, 0.55); /* 반투명 — frosted glass 카드 */
+  --card: rgba(24, 25, 28, 0.42); /* 반투명 — frosted glass 카드 (블러 굴절이 보이게) */
   --card-foreground: var(--fg-100);
   --popover: var(--cod-800);
   --popover-foreground: var(--fg-100);
@@ -103,10 +103,11 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* 앰비언트 — frosted glass가 굴절할 은은한 배경(없으면 블러가 안 보임) */
+  /* 앰비언트 — frosted glass가 굴절할 배경(없으면 블러가 안 보임). 콘텐츠 뒤에 글로우 배치. */
   background:
-    radial-gradient(48rem 32rem at 8% -10%, rgba(16, 163, 127, 0.08), transparent 60%),
-    radial-gradient(42rem 34rem at 104% 4%, rgba(125, 135, 165, 0.07), transparent 58%),
+    radial-gradient(46rem 32rem at 16% -4%, rgba(16, 163, 127, 0.2), transparent 58%),
+    radial-gradient(48rem 40rem at 70% 6%, rgba(110, 132, 178, 0.16), transparent 56%),
+    radial-gradient(40rem 36rem at 98% 92%, rgba(16, 163, 127, 0.1), transparent 60%),
     var(--cod-1000);
   background-attachment: fixed;
   color: var(--foreground);
