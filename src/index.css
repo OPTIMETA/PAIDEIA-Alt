@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+}
+
+/*
+ * PAIDEIA Exam Radar — 모노톤 디자인 토큰 (plan.md §14)
+ * 진한 회색(ink) + 파우더톤 회색(powder) · 브루탈리즘(radius 0) · 글래스 셸.
+ * 색으로 의미를 칠하지 않는다 — 무채 1액센트(--hot)만.
+ */
+:root {
+  --radius: 0rem; /* 브루탈리즘: 하드 엣지 */
+
+  /* 진한 회색 (Shell / 배경) */
+  --ink-900: #0e0f11;
+  --ink-800: #16181b;
+  --ink-700: #1e2125;
+  --ink-600: #2a2e33;
+  /* 파우더톤 회색 (표면 / 텍스트 / 보더) */
+  --powder-100: #edeef0;
+  --powder-200: #d9dbdf;
+  --powder-300: #bfc3c9;
+  --powder-400: #9aa0a8;
+  --powder-500: #7a828c;
+  /* 글래스 */
+  --glass-bg: rgba(30, 33, 37, 0.55);
+  --glass-stroke: rgba(217, 219, 223, 0.14);
+  --glass-blur: 28px;
+  /* 브루탈 */
+  --brut-border: var(--powder-200);
+  --brut-offset: 4px;
+  /* 단 하나의 액센트 (hover/focus · 골드존) */
+  --hot: #c7cdd4;
+
+  /* shadcn role 매핑 (dark default) */
+  --background: var(--ink-900);
+  --foreground: var(--powder-100);
+  --card: var(--ink-800);
+  --card-foreground: var(--powder-100);
+  --popover: var(--ink-800);
+  --popover-foreground: var(--powder-100);
+  --primary: var(--powder-100);
+  --primary-foreground: var(--ink-900);
+  --secondary: var(--ink-700);
+  --secondary-foreground: var(--powder-100);
+  --muted: var(--ink-700);
+  --muted-foreground: var(--powder-400);
+  --accent: var(--ink-600);
+  --accent-foreground: var(--powder-100);
+  --destructive: #b4474e;
+  --destructive-foreground: var(--powder-100);
+  --border: var(--ink-600);
+  --input: var(--ink-600);
+  --ring: var(--powder-400);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.05em; /* 전역 -5% 자간 (plan.md §14.2) */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 모노스페이스 라벨·코드는 자간 0 복원 (가독성) */
+code,
+kbd,
+pre,
+.mono {
+  letter-spacing: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+/* ── 3-레이어 프리미티브 (plan.md §14.1) ── */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-stroke);
+}
+.brut {
+  border: 1.5px solid var(--brut-border);
+  border-radius: 0;
+  box-shadow: var(--brut-offset) var(--brut-offset) 0 var(--powder-300);
+}
+.brut-press:active {
+  box-shadow: 0 0 0 0 transparent;
+  transform: translate(var(--brut-offset), var(--brut-offset));
+}
+.mono {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  text-transform: uppercase;
+}
