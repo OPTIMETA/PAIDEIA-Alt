@@ -6,7 +6,7 @@ export function Welcome({ onNewCourse, onClose }: { onNewCourse: () => void; onC
   return (
     <div className="absolute inset-0 z-50 grid place-items-center p-4">
       <div className="glass absolute inset-0" />
-      <div className="frost relative w-[min(94%,460px)] rounded-2xl border p-7 text-center">
+      <div className="frost relative max-h-[92%] w-[min(94%,460px)] overflow-auto rounded-2xl border p-7 text-center">
         <div
           className="mx-auto mb-4 grid size-11 place-items-center rounded-xl"
           style={{ background: "var(--accent-soft)" }}

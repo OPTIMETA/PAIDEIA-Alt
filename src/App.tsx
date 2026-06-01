@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Eye, Plus, Radar, Scissors, Sparkles } from "lucide-react";
+import { Eye, Map as MapIcon, PanelLeft, Plus, Radar, Scissors, Sparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ export default function App() {
   const [growth, setGrowth] = useState<string | null>(null);
   const [collecting, setCollecting] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // 코스 목록 로드 (없으면 데모 시드)
   useEffect(() => {
@@ -274,8 +275,9 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* 사이드바 — 코스 목록 */}
-      <aside className="glass flex w-60 shrink-0 flex-col border-r p-4">
+      {/* 사이드바 — 코스 목록 (반응형: 접기 가능, 좁은 화면에서 더 좁게) */}
+      {sidebarOpen ? (
+        <aside className="glass flex w-56 shrink-0 flex-col border-r p-4 xl:w-60">
         <div className="mb-7 flex items-center gap-2.5">
           <div
             className="grid size-8 place-items-center rounded-lg"
@@ -320,33 +322,44 @@ export default function App() {
           </button>
         </nav>
 
-        <Badge variant={isAlt ? "default" : "secondary"} className="mt-3 w-fit">
-          {isAlt ? t("runtime.connected") : t("runtime.preview")}
-        </Badge>
-      </aside>
+          <Badge variant={isAlt ? "default" : "secondary"} className="mt-3 w-fit">
+            {isAlt ? t("runtime.connected") : t("runtime.preview")}
+          </Badge>
+        </aside>
+      ) : null}
 
       {/* 디테일 */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="glass flex items-center justify-between gap-4 overflow-x-auto border-b px-6 py-3">
-          <div className="flex shrink-0 items-baseline gap-3 whitespace-nowrap">
-            <span className="max-w-[200px] truncate text-sm text-muted-foreground">
-              {courseName}
-            </span>
-            <span className="text-3xl font-normal tabular-nums tracking-tight">
-              {dDay(examDate)}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {topics.length} 토픽 · 골드존 {goldCount}
-            </span>
-            {growth ? (
-              <span className="text-xs font-normal" style={{ color: "var(--accent-1)" }}>
-                ↑ {growth}
+        <header className="glass flex items-center justify-between gap-3 overflow-x-auto border-b px-4 py-3 sm:px-6">
+          <div className="flex shrink-0 items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((v) => !v)}
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="사이드바 토글"
+            >
+              <PanelLeft className="size-4" />
+            </button>
+            <div className="flex items-baseline gap-2 whitespace-nowrap sm:gap-3">
+              <span className="hidden max-w-[120px] truncate text-sm text-muted-foreground sm:inline sm:max-w-[200px]">
+                {courseName}
               </span>
-            ) : null}
+              <span className="text-2xl font-normal tabular-nums tracking-tight sm:text-3xl">
+                {dDay(examDate)}
+              </span>
+              <span className="hidden text-xs text-muted-foreground md:inline">
+                {topics.length} 토픽 · 골드존 {goldCount}
+              </span>
+              {growth ? (
+                <span className="text-xs font-normal" style={{ color: "var(--accent-1)" }}>
+                  ↑ {growth}
+                </span>
+              ) : null}
+            </div>
           </div>
 
           <div className="flex shrink-0 items-center gap-4">
-            <div className="flex shrink-0 items-center gap-2 whitespace-nowrap text-xs text-muted-foreground">
+            <div className="hidden shrink-0 items-center gap-2 whitespace-nowrap text-xs text-muted-foreground lg:flex">
               <span>예산</span>
               <input
                 type="range"
@@ -368,14 +381,15 @@ export default function App() {
               {budget != null ? <span>· 절약 {savedMin}분</span> : null}
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1.5">
               <Button
                 variant={gapMode ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setGapMode((v) => !v)}
                 title="가르친 것 vs 시험낼 것 (시험신호 없는 토픽 흐리게)"
               >
-                <Eye className="size-4" /> 갭
+                <Eye className="size-4" />
+                <span className="hidden lg:inline">갭</span>
               </Button>
               <Button
                 variant="ghost"
@@ -383,18 +397,24 @@ export default function App() {
                 onClick={isAlt ? () => void handleCollect() : handleDemoGrow}
                 disabled={collecting}
               >
-                <Sparkles className="size-4" />{" "}
-                {collecting ? "수집 중…" : isAlt ? "수집" : "데모 강의"}
+                <Sparkles className="size-4" />
+                {collecting ? (
+                  <span>수집 중…</span>
+                ) : (
+                  <span className="hidden lg:inline">{isAlt ? "수집" : "데모 강의"}</span>
+                )}
               </Button>
               <Button variant="secondary" size="sm" onClick={() => setOpsOpen(true)}>
-                작전지도
+                <MapIcon className="size-4" />
+                <span className="hidden md:inline">작전지도</span>
               </Button>
               <Button
                 size="sm"
                 onClick={() => setSessionOpen(true)}
                 className={allUnrated ? "animate-pulse" : undefined}
               >
-                <Scissors className="size-4" /> 오늘의 컷
+                <Scissors className="size-4" />
+                <span className="hidden sm:inline">오늘의 컷</span>
               </Button>
             </div>
           </div>

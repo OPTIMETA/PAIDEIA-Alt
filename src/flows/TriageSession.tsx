@@ -32,7 +32,7 @@ export function TriageSession({ topics, pointsByTopic, onRate, onDrop, onClose }
   return (
     <div className="absolute inset-0 z-10 grid place-items-center">
       <div className="glass absolute inset-0" />
-      <div className="frost relative w-[min(92%,520px)] rounded-2xl border p-6">
+      <div className="frost relative max-h-[92%] w-[min(92%,520px)] overflow-auto rounded-2xl border p-6">
         <div className="mb-5 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             오늘의 컷 · {Math.min(i + 1, queue.length)}/{queue.length}

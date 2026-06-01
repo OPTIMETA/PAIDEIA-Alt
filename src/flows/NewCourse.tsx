@@ -52,7 +52,7 @@ export function NewCourse({
   return (
     <div className="absolute inset-0 z-40 grid place-items-center p-4">
       <div className="glass absolute inset-0" />
-      <div className="frost relative w-[min(94%,520px)] rounded-2xl border p-6">
+      <div className="frost relative max-h-[92%] w-[min(94%,520px)] overflow-auto rounded-2xl border p-6">
         <div className="mb-5 flex items-start justify-between">
           <div>
             <p className="text-xs text-muted-foreground">새 코스</p>

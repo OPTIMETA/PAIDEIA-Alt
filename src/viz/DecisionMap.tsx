@@ -42,10 +42,15 @@ type Props = {
   signalCounts?: ReadonlyMap<string, number>;
 };
 
-const PAD_X = 96;
-const PAD_TOP = 54;
-const BAND_H = 70; // 하단 '미평가' 띠
-const PAD_BOTTOM = 44;
+// 패딩을 화면 크기에 비례(클램프) — 작은 창에서 과한 여백 방지, 큰 창에서도 적정.
+function pads(w: number, h: number) {
+  return {
+    PAD_X: Math.round(Math.max(48, Math.min(110, w * 0.085))),
+    PAD_TOP: Math.round(Math.max(36, Math.min(58, h * 0.09))),
+    BAND_H: Math.round(Math.max(44, Math.min(76, h * 0.11))), // 하단 '미평가' 띠
+    PAD_BOTTOM: Math.round(Math.max(26, Math.min(46, h * 0.07))),
+  };
+}
 
 function isHot(examProb: number, confidence: number | null): boolean {
   return examProb >= 0.6 && confidence !== null && confidence <= 1;
@@ -66,6 +71,7 @@ function layout(
   w: number,
   h: number,
 ) {
+  const { PAD_X, PAD_TOP, BAND_H, PAD_BOTTOM } = pads(w, h);
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
   const tx = PAD_X + examProb * (w - 2 * PAD_X);
@@ -83,6 +89,7 @@ function layout(
 }
 
 function invert(x: number, y: number, w: number, h: number) {
+  const { PAD_X, PAD_TOP, BAND_H, PAD_BOTTOM } = pads(w, h);
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
   const examProb = Math.min(1, Math.max(0, (x - PAD_X) / (w - 2 * PAD_X)));
@@ -289,6 +296,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   }
 
   const { w, h } = dimsRef.current;
+  const { PAD_X, PAD_TOP, BAND_H, PAD_BOTTOM } = pads(w, h);
   const nodes = nodesRef.current;
   const byId = new Map(nodes.map((n) => [n.id, n]));
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
