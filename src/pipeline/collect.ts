@@ -12,7 +12,18 @@ import {
 import { ingestTranscript, mergeTopics } from "@/pipeline/ingest";
 import type { ExamPoint, Topic } from "@/lib/schemas";
 
-export type CollectResult = { topics: Topic[]; examPoints: ExamPoint[]; ingested: number };
+export type CollectResult = {
+  topics: Topic[];
+  examPoints: ExamPoint[];
+  /** 코스에 연결된 강의 수 (0이면 연결 안 됨) */
+  lectureCount: number;
+  /** 실제 추출 성공한 강의 수 */
+  ingested: number;
+  /** 트랜스크립트가 비어 건너뛴 강의 수 */
+  skippedNoTranscript: number;
+  /** 강의별 실패(AI 등) — 삼키지 않고 표면화 */
+  errors: { noteId: number; message: string }[];
+};
 
 /** 코스의 미수집(pending) 강의들을 수집. noteId 지정 시 그 노트만(transcriptUpdated 대응). */
 export async function collectCourse(courseId: string, onlyNoteId?: number): Promise<CollectResult> {
@@ -23,6 +34,8 @@ export async function collectCourse(courseId: string, onlyNoteId?: number): Prom
   const examPoints = await getExamPoints(courseId);
   const updated = [...lectures];
   let ingested = 0;
+  let skippedNoTranscript = 0;
+  const errors: { noteId: number; message: string }[] = [];
 
   for (let i = 0; i < updated.length; i++) {
     const lec = updated[i];
@@ -31,7 +44,10 @@ export async function collectCourse(courseId: string, onlyNoteId?: number): Prom
     try {
       const content = await alt.notes.getContent(lec.noteId);
       const transcript = content.transcript ?? "";
-      if (!transcript.trim()) continue;
+      if (!transcript.trim()) {
+        skippedNoTranscript++;
+        continue;
+      }
       const res = await ingestTranscript(transcript, lec.noteId);
       topics = mergeTopics(topics, res.topics);
       // 같은 노트 재수집 시 중복 방지: 해당 noteId의 기존 examPoint 제거 후 추가
@@ -41,13 +57,23 @@ export async function collectCourse(courseId: string, onlyNoteId?: number): Prom
       examPoints.push(...kept);
       updated[i] = { ...lec, status: "ingested", ingestedAt: new Date().toISOString() };
       ingested++;
-    } catch {
-      /* 한 강의 실패는 건너뛰고 계속 */
+    } catch (e) {
+      // 삼키지 않고 기록 → 호출부가 사용자에게 표시
+      errors.push({ noteId: lec.noteId, message: e instanceof Error ? e.message : String(e) });
     }
   }
 
-  await setTopics(courseId, topics);
-  await setExamPoints(courseId, examPoints);
-  await setLectures(courseId, updated);
-  return { topics, examPoints, ingested };
+  if (ingested > 0) {
+    await setTopics(courseId, topics);
+    await setExamPoints(courseId, examPoints);
+    await setLectures(courseId, updated);
+  }
+  return {
+    topics,
+    examPoints,
+    lectureCount: lectures.length,
+    ingested,
+    skippedNoTranscript,
+    errors,
+  };
 }

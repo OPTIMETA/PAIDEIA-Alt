@@ -39,6 +39,7 @@ export default function App() {
   const [spike, setSpike] = useState<string | null>(null);
   const [gapMode, setGapMode] = useState(false);
   const [growth, setGrowth] = useState<string | null>(null);
+  const [collecting, setCollecting] = useState(false);
 
   // 코스 목록 로드 (없으면 데모 시드)
   useEffect(() => {
@@ -167,6 +168,8 @@ export default function App() {
   const handleCollect = useCallback(
     async (noteId?: number) => {
       if (!activeId) return;
+      setCollecting(true);
+      setSpike(null);
       try {
         // noteId 지정(transcriptUpdated) → 그 노트만 재수집(이미 ingested여도). 없으면 pending 전체.
         const res = await collectCourse(activeId, noteId);
@@ -176,8 +179,20 @@ export default function App() {
           setGrowth(`강의 ${res.ingested}개 수집`);
           window.setTimeout(() => setGrowth(null), 4000);
         }
+        // 결과를 항상 표시(빈 강의·트랜스크립트 없음·실패도 무반응 금지)
+        const parts: string[] = [];
+        if (res.lectureCount === 0)
+          parts.push("연결된 강의가 없습니다 — '새 코스'에서 강의 녹음 노트를 연결하세요.");
+        if (res.ingested > 0) parts.push(`${res.ingested}개 강의 수집 완료.`);
+        if (res.skippedNoTranscript > 0)
+          parts.push(`${res.skippedNoTranscript}개는 트랜스크립트가 비어 건너뜀.`);
+        if (res.errors.length > 0) parts.push(`실패 ${res.errors.length}건 — ${res.errors[0].message}`);
+        if (parts.length === 0) parts.push("새로 수집할 강의가 없습니다(이미 수집됨).");
+        setSpike(parts.join(" "));
       } catch (e) {
-        setSpike(e instanceof Error ? e.message : String(e));
+        setSpike(`수집 실패: ${e instanceof Error ? e.message : String(e)}`);
+      } finally {
+        setCollecting(false);
       }
     },
     [activeId],
@@ -332,8 +347,10 @@ export default function App() {
                 variant="ghost"
                 size="sm"
                 onClick={isAlt ? () => void handleCollect() : handleDemoGrow}
+                disabled={collecting}
               >
-                <Sparkles className="size-4" /> {isAlt ? "수집" : "데모 강의"}
+                <Sparkles className="size-4" />{" "}
+                {collecting ? "수집 중…" : isAlt ? "수집" : "데모 강의"}
               </Button>
               <Button variant="ghost" size="sm" onClick={runSpike} disabled={!isAlt}>
                 <Activity className="size-4" /> 스파이크
@@ -398,7 +415,18 @@ export default function App() {
           </div>
         </div>
 
-        {spike ? <p className="mono px-6 pb-2 text-xs text-muted-foreground">{spike}</p> : null}
+        {spike ? (
+          <div className="flex items-center justify-between gap-3 border-t px-6 py-2 text-xs text-muted-foreground">
+            <span>{spike}</span>
+            <button
+              type="button"
+              onClick={() => setSpike(null)}
+              className="shrink-0 transition-colors hover:text-foreground"
+            >
+              닫기
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
