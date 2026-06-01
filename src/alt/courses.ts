@@ -31,8 +31,14 @@ export async function listCourses(): Promise<CourseRef[]> {
 }
 
 function slug(name: string): string {
-  const base = name.trim().replace(/\s+/g, "-").slice(0, 24) || "course";
-  return `c-${base}-${Date.now().toString(36)}`;
+  // ⚠️ id는 storage 키(course:<id>:meta)에 들어간다. 키 규칙은 ^[a-zA-Z0-9._:-]+$ 뿐이라
+  // 한글 등 비-ASCII가 들어가면 alt.storage.set이 throw한다 → id는 반드시 ASCII-safe.
+  const ascii = name
+    .trim()
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24);
+  return `c-${ascii || "course"}-${Date.now().toString(36)}`;
 }
 
 export async function createCourse(

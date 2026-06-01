@@ -149,11 +149,16 @@ export default function App() {
 
   const handleCreateCourse = useCallback(
     async (name: string, date: string | null, lectures: Lecture[]) => {
-      const id = await createCourse(name, date, lectures);
-      const cs = await listCourses();
-      setCourses(cs);
-      setActiveId(id);
-      setWizardOpen(false);
+      try {
+        const id = await createCourse(name, date, lectures);
+        const cs = await listCourses();
+        setCourses(cs);
+        setActiveId(id);
+        setWizardOpen(false);
+      } catch (e) {
+        // 조용한 실패 방지 — 저장 키/값 오류 등을 표면화
+        setSpike(`코스 생성 실패: ${e instanceof Error ? e.message : String(e)}`);
+      }
     },
     [],
   );

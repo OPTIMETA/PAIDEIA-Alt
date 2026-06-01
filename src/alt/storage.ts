@@ -15,12 +15,23 @@ import type { CourseMeta, ExamPoint, Lecture, StudySession, Topic } from "@/lib/
 
 const memory = new Map<string, PluginStorageValue>();
 
+// SDK pluginStorageKeySchema 와 동일 규칙. 프리뷰 목도 검증해 Alt와 동일하게 실패시킨다
+// (AGENTS.md: 보안 동작을 '되는 것처럼' 목하지 말 것 → 키 규칙은 그대로 강제).
+const KEY_RE = /^[a-zA-Z0-9._:-]+$/;
+function assertKey(key: string): void {
+  if (key.length > 160 || !KEY_RE.test(key)) {
+    throw new Error(`Invalid storage key (must match ^[a-zA-Z0-9._:-]+$, ≤160): ${key}`);
+  }
+}
+
 async function kvGet(key: string): Promise<PluginStorageValue | undefined> {
+  assertKey(key);
   if (hasAltRuntime()) return alt.storage.get(key);
   return memory.get(key);
 }
 
 async function kvSet(key: string, value: PluginStorageValue): Promise<void> {
+  assertKey(key);
   if (hasAltRuntime()) {
     await alt.storage.set(key, value);
     return;
