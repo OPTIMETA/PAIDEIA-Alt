@@ -109,6 +109,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   const movedRef = useRef(false);
   const [, setTick] = useState(0);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [size, setSize] = useState({ w: 960, h: 600 });
   const rerender = useCallback(() => setTick((tk) => tk + 1), []);
 
   // 모든 관계(같은 노트 공동출현) + 노드당 backbone 1개 (헤어볼 방지)
@@ -167,17 +168,18 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     const ro = new ResizeObserver((entries) => {
       const cr = entries[0]?.contentRect;
       if (!cr) return;
-      dimsRef.current = { w: Math.max(420, cr.width), h: Math.max(360, cr.height) };
-      retarget();
-      rerender();
+      const w = Math.max(420, Math.round(cr.width));
+      const h = Math.max(360, Math.round(cr.height));
+      dimsRef.current = { w, h };
+      // size 변경 → 시뮬레이션 effect 재실행 → 노드가 새 크기에 맞춰 재배치
+      setSize((s) => (s.w === w && s.h === h ? s : { w, h }));
     });
     ro.observe(el);
     return () => ro.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const { w, h } = dimsRef.current;
+    const { w, h } = size;
     const prev = new Map(nodesRef.current.map((n) => [n.id, n]));
     const nodes: SimNode[] = topics.map((t) => {
       const { tx, ty } = layout(t.examProb, t.confidence, t.posOverride, w, h);
@@ -210,24 +212,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     return () => {
       sim.stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topics]);
-
-  function retarget() {
-    const { w, h } = dimsRef.current;
-    for (const n of nodesRef.current) {
-      const { tx, ty } = layout(n.examProb, n.confidence, n.posOverride, w, h);
-      n.tx = tx;
-      n.ty = ty;
-    }
-    const sim = simRef.current;
-    if (sim) {
-      sim.alpha(0.6);
-      for (let i = 0; i < 260; i++) sim.tick();
-      sim.stop();
-      rerender();
-    }
-  }
+  }, [topics, size]);
 
   function onPointerDown(e: React.PointerEvent, id: string) {
     e.preventDefault();
@@ -295,7 +280,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     }
   }
 
-  const { w, h } = dimsRef.current;
+  const { w, h } = size;
   const { PAD_X, PAD_TOP, BAND_H, PAD_BOTTOM } = pads(w, h);
   const nodes = nodesRef.current;
   const byId = new Map(nodes.map((n) => [n.id, n]));
