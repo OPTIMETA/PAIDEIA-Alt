@@ -30,8 +30,9 @@ export default function App() {
     let alive = true;
     void (async () => {
       let loaded = await getTopics(courseId);
-      // 프리뷰(Alt 밖): 데모 시드로 맵을 채워 인터랙션을 확인
-      if (loaded.length === 0 && !hasAltRuntime()) {
+      // 코스가 비어있으면 데모 시드(선형대수)로 맵을 채운다.
+      // New Course 마법사 + 실제 수집이 붙으면 이 시드는 제거된다.
+      if (loaded.length === 0) {
         loaded = demoTopics;
         await saveTopics(courseId, loaded);
       }
