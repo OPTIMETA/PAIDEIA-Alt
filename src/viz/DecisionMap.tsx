@@ -11,6 +11,7 @@ type SimNode = {
   name: string;
   examProb: number;
   confidence: number | null;
+  posOverride: { x: number; y: number } | null;
   hot: boolean;
   r: number;
   tx: number;
@@ -28,7 +29,14 @@ type Edge = { a: string; b: string; w: number };
 
 type Props = {
   topics: Topic[];
-  onChange?: (id: string, patch: { examProb: number; confidence: number | null }) => void;
+  onChange?: (
+    id: string,
+    patch: {
+      examProb: number;
+      confidence: number | null;
+      posOverride?: { x: number; y: number } | null;
+    },
+  ) => void;
   onSelect?: (id: string) => void;
   dimmedIds?: ReadonlySet<string>;
   signalCounts?: ReadonlyMap<string, number>;
@@ -51,14 +59,26 @@ function truncate(s: string, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 }
 
-function layout(examProb: number, confidence: number | null, w: number, h: number) {
+function layout(
+  examProb: number,
+  confidence: number | null,
+  posOverride: { x: number; y: number } | null,
+  w: number,
+  h: number,
+) {
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
   const tx = PAD_X + examProb * (w - 2 * PAD_X);
-  const ty =
-    confidence === null
-      ? h - BAND_H / 2 - PAD_BOTTOM / 2
-      : ratedBottom - (confidence / 3) * (ratedBottom - ratedTop);
+  let ty: number;
+  if (posOverride) {
+    // 드래그로 둔 자리 그대로(연속). 세로 스냅 없음.
+    const cf = Math.min(3, Math.max(0, posOverride.y));
+    ty = ratedBottom - (cf / 3) * (ratedBottom - ratedTop);
+  } else if (confidence === null) {
+    ty = h - BAND_H / 2 - PAD_BOTTOM / 2;
+  } else {
+    ty = ratedBottom - (confidence / 3) * (ratedBottom - ratedTop);
+  }
   return { tx, ty };
 }
 
@@ -66,10 +86,9 @@ function invert(x: number, y: number, w: number, h: number) {
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
   const examProb = Math.min(1, Math.max(0, (x - PAD_X) / (w - 2 * PAD_X)));
-  if (y > ratedBottom + 6) return { examProb, confidence: null };
-  const raw = ((ratedBottom - y) / (ratedBottom - ratedTop)) * 3;
-  const confidence = Math.min(3, Math.max(0, Math.round(raw)));
-  return { examProb, confidence };
+  if (y > ratedBottom + 6) return { examProb, confidence: null, cf: null };
+  const cf = Math.min(3, Math.max(0, ((ratedBottom - y) / (ratedBottom - ratedTop)) * 3));
+  return { examProb, confidence: Math.round(cf), cf };
 }
 
 export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCounts }: Props) {
@@ -154,13 +173,14 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     const { w, h } = dimsRef.current;
     const prev = new Map(nodesRef.current.map((n) => [n.id, n]));
     const nodes: SimNode[] = topics.map((t) => {
-      const { tx, ty } = layout(t.examProb, t.confidence, w, h);
+      const { tx, ty } = layout(t.examProb, t.confidence, t.posOverride, w, h);
       const old = prev.get(t.id);
       return {
         id: t.id,
         name: t.name,
         examProb: t.examProb,
         confidence: t.confidence,
+        posOverride: t.posOverride,
         hot: isHot(t.examProb, t.confidence),
         r: radius(t.examProb),
         tx,
@@ -189,7 +209,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   function retarget() {
     const { w, h } = dimsRef.current;
     for (const n of nodesRef.current) {
-      const { tx, ty } = layout(n.examProb, n.confidence, w, h);
+      const { tx, ty } = layout(n.examProb, n.confidence, n.posOverride, w, h);
       n.tx = tx;
       n.ty = ty;
     }
@@ -253,10 +273,14 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
         sim.stop();
       }
       const { w, h } = dimsRef.current;
-      const next = invert(n.fx ?? n.x, n.fy ?? n.y, w, h);
+      const r = invert(n.fx ?? n.x, n.fy ?? n.y, w, h);
       n.fx = null;
       n.fy = null;
-      onChange?.(id, next);
+      onChange?.(id, {
+        examProb: r.examProb,
+        confidence: r.confidence,
+        posOverride: r.cf == null ? null : { x: r.examProb, y: r.cf },
+      });
     } else {
       n.fx = null;
       n.fy = null;

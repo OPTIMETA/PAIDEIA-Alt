@@ -126,7 +126,14 @@ export default function App() {
   );
 
   const handleChange = useCallback(
-    (id: string, patch: { examProb: number; confidence: number | null }) => {
+    (
+      id: string,
+      patch: {
+        examProb: number;
+        confidence: number | null;
+        posOverride?: { x: number; y: number } | null;
+      },
+    ) => {
       setTopics((prev) => {
         const next = prev.map((tp) =>
           tp.id === id
@@ -134,6 +141,8 @@ export default function App() {
                 ...tp,
                 examProb: patch.examProb,
                 confidence: patch.confidence,
+                posOverride:
+                  patch.posOverride !== undefined ? patch.posOverride : tp.posOverride,
                 triage: triageFor(patch.examProb, patch.confidence),
               }
             : tp,
@@ -149,7 +158,9 @@ export default function App() {
     (id: string, confidence: number) => {
       setTopics((prev) => {
         const next = prev.map((tp) =>
-          tp.id === id ? { ...tp, confidence, triage: triageFor(tp.examProb, confidence) } : tp,
+          tp.id === id
+            ? { ...tp, confidence, posOverride: null, triage: triageFor(tp.examProb, confidence) }
+            : tp,
         );
         persist(next);
         return next;
