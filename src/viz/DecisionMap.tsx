@@ -28,6 +28,8 @@ type Edge = { a: string; b: string };
 type Props = {
   topics: Topic[];
   onChange?: (id: string, patch: { examProb: number; confidence: number | null }) => void;
+  onSelect?: (id: string) => void;
+  dimmedIds?: ReadonlySet<string>;
 };
 
 const PAD_X = 70;
@@ -64,13 +66,15 @@ function invert(x: number, y: number, w: number, h: number) {
   return { examProb, confidence };
 }
 
-export function DecisionMap({ topics, onChange }: Props) {
+export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dimsRef = useRef({ w: 960, h: 600 });
   const nodesRef = useRef<SimNode[]>([]);
   const simRef = useRef<Simulation<SimNode, undefined> | null>(null);
   const dragId = useRef<string | null>(null);
+  const downAt = useRef<{ x: number; y: number } | null>(null);
+  const movedRef = useRef(false);
   const [, setTick] = useState(0);
   const rerender = useCallback(() => setTick((tk) => tk + 1), []);
 
@@ -159,15 +163,12 @@ export function DecisionMap({ topics, onChange }: Props) {
   function onPointerDown(e: React.PointerEvent, id: string) {
     e.preventDefault();
     dragId.current = id;
+    movedRef.current = false;
+    downAt.current = { x: e.clientX, y: e.clientY };
     const n = nodesRef.current.find((x) => x.id === id);
     if (n) {
       n.fx = n.x;
       n.fy = n.y;
-    }
-    const sim = simRef.current;
-    if (sim) {
-      sim.on("tick", rerender); // 드래그 동안만 라이브 애니메이션
-      sim.alphaTarget(0.3).restart();
     }
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
@@ -177,6 +178,17 @@ export function DecisionMap({ topics, onChange }: Props) {
     const id = dragId.current;
     const svg = svgRef.current;
     if (!id || !svg) return;
+    // 클릭 vs 드래그 구분: 4px 넘게 움직이면 드래그로 전환(애니메이션 시작)
+    if (!movedRef.current && downAt.current) {
+      const dist = Math.hypot(e.clientX - downAt.current.x, e.clientY - downAt.current.y);
+      if (dist <= 4) return;
+      movedRef.current = true;
+      const sim = simRef.current;
+      if (sim) {
+        sim.on("tick", rerender);
+        sim.alphaTarget(0.3).restart();
+      }
+    }
     const rect = svg.getBoundingClientRect();
     const n = nodesRef.current.find((x) => x.id === id);
     if (n) {
@@ -190,19 +202,26 @@ export function DecisionMap({ topics, onChange }: Props) {
     dragId.current = null;
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", onPointerUp);
-    const sim = simRef.current;
-    if (sim) {
-      sim.on("tick", null); // 드래그 끝 → 애니메이션 정지(이후 재배치는 동기)
-      sim.alphaTarget(0);
-      sim.stop();
-    }
     const n = nodesRef.current.find((x) => x.id === id);
-    if (n && id) {
+    if (!n || !id) return;
+    if (movedRef.current) {
+      // 드래그 → preference override (재조정)
+      const sim = simRef.current;
+      if (sim) {
+        sim.on("tick", null);
+        sim.alphaTarget(0);
+        sim.stop();
+      }
       const { w, h } = dimsRef.current;
       const next = invert(n.fx ?? n.x, n.fy ?? n.y, w, h);
       n.fx = null;
       n.fy = null;
-      onChange?.(id, next); // topics 갱신 → 효과가 동기 재정착
+      onChange?.(id, next);
+    } else {
+      // 클릭 → 증거 드로어 열기 (위치 변화 없음)
+      n.fx = null;
+      n.fy = null;
+      onSelect?.(id);
     }
   }
 
@@ -292,6 +311,7 @@ export function DecisionMap({ topics, onChange }: Props) {
             transform={`translate(${n.x},${n.y})`}
             onPointerDown={(e) => onPointerDown(e, n.id)}
             className="cursor-grab active:cursor-grabbing"
+            opacity={dimmedIds?.has(n.id) ? 0.26 : 1}
           >
             {n.hot ? <circle r={n.r + 7} fill="var(--accent-soft)" /> : null}
             <circle
