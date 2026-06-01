@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Activity, Database, Radar, Scissors } from "lucide-react";
+import { Activity, Database, Map as MapIcon, Radar, Scissors } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,12 @@ import { runtimeSpike } from "@/alt/ai";
 import { t } from "@/lib/i18n";
 
 type SpikeResult = { modelCount: number; structuredModel: string | null };
+
+const NAV: { icon: typeof Radar; label: string; active?: boolean }[] = [
+  { icon: Radar, label: "Radar", active: true },
+  { icon: Scissors, label: "오늘의 컷" },
+  { icon: MapIcon, label: "작전지도" },
+];
 
 export default function App() {
   const isAlt = useMemo(() => hasAltRuntime(), []);
@@ -37,127 +43,151 @@ export default function App() {
   }, []);
 
   return (
-    <main className="min-h-screen p-6">
-      <div className="mx-auto flex max-w-4xl flex-col gap-5">
-        {/* 글래스 상단바 (Shell) */}
-        <header className="glass flex items-center justify-between gap-4 p-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Radar className="size-5" />
-              <h1 className="text-2xl font-extrabold">{t("app.title")}</h1>
-              <span className="mono text-[10px] text-muted-foreground">by Optimeta</span>
+    <div className="flex h-screen overflow-hidden">
+      {/* ── 사이드바 (반투명 머티리얼) ── */}
+      <aside className="glass flex w-60 shrink-0 flex-col justify-between border-r p-4">
+        <div className="space-y-7">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="grid size-8 place-items-center rounded-lg"
+              style={{ background: "var(--accent-soft)" }}
+            >
+              <Radar className="size-4" style={{ color: "var(--accent-1)" }} />
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">{t("app.tagline")}</p>
+            <div className="leading-tight">
+              <p className="text-sm font-extrabold">{t("app.title")}</p>
+              <p className="text-[11px] text-muted-foreground">by Optimeta</p>
+            </div>
           </div>
-          <Badge variant={isAlt ? "default" : "secondary"}>
-            {isAlt ? t("runtime.connected") : t("runtime.preview")}
-          </Badge>
+
+          <nav className="space-y-0.5">
+            {NAV.map((item) => (
+              <div
+                key={item.label}
+                className="flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors"
+                style={
+                  item.active
+                    ? { background: "var(--accent-soft)", color: "var(--accent-1)" }
+                    : { color: "var(--fg-500)" }
+                }
+              >
+                <item.icon className="size-4" />
+                {item.label}
+              </div>
+            ))}
+          </nav>
+        </div>
+
+        <Badge variant={isAlt ? "default" : "secondary"} className="w-fit">
+          {isAlt ? t("runtime.connected") : t("runtime.preview")}
+        </Badge>
+      </aside>
+
+      {/* ── 디테일 ── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* 탑바 (반투명) */}
+        <header className="glass flex items-center justify-between border-b px-6 py-3">
+          <div className="flex items-baseline gap-3">
+            <span className="text-sm text-muted-foreground">선형대수</span>
+            <span className="text-3xl font-semibold tabular-nums tracking-tight">D-7</span>
+          </div>
+          <Button size="sm">작전지도</Button>
         </header>
 
-        {/* 2D 결정 맵 미리보기 (Viz — Phase 2에서 d3 force로 교체) */}
-        <Card className="brut">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scissors className="size-5" /> 2D 결정 맵 (미리보기)
-            </CardTitle>
-            <CardDescription>X=시험확률 · Y=자신감 — 골드존은 '지금', 함정존은 '버려도 안전'</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <QuadrantPreview />
-          </CardContent>
-        </Card>
+        {/* 본문 */}
+        <div className="flex-1 overflow-auto p-6">
+          <div className="mx-auto max-w-3xl space-y-5">
+            <p className="text-sm text-muted-foreground">{t("app.tagline")}</p>
 
-        {/* 코스 / 런타임 스파이크 (Component — 브루탈) */}
-        <section className="grid gap-4 md:grid-cols-2">
-          <Card className="brut">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="size-5" /> 코스
-              </CardTitle>
-              <CardDescription>
-                storage <span className="mono">course:*</span> (Phase 0 스캐폴드)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {loaded ? (
-                courses.length > 0 ? (
-                  <ul className="text-sm">
-                    {courses.map((c) => (
-                      <li key={c} className="mono">
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{t("course.empty")}</p>
-                )
-              ) : (
-                <p className="text-sm text-muted-foreground">아직 로드 안 함.</p>
-              )}
-              <Button variant="secondary" className="brut-press" onClick={loadCourses}>
-                {t("course.load")}
-              </Button>
-            </CardContent>
-          </Card>
+            {/* 2D 결정 맵 (hero) */}
+            <Card className="frost">
+              <CardHeader>
+                <CardTitle className="text-base">2D 결정 맵</CardTitle>
+                <CardDescription>
+                  X = 시험확률 · Y = 자신감 — 골드존은 '지금', 함정존은 '버려도 안전'
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <QuadrantPreview />
+              </CardContent>
+            </Card>
 
-          <Card className="brut">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="size-5" /> 런타임 스파이크
-              </CardTitle>
-              <CardDescription>
-                <span className="mono">models.list().supportsTools</span> — Alt 안에서만 의미
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {spike ? (
-                <div className="space-y-1 text-sm">
-                  <p>
-                    모델 수: <span className="mono">{spike.modelCount}</span>
-                  </p>
-                  <p>
-                    구조화 모델: <span className="mono">{spike.structuredModel ?? "—"}</span>
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {isAlt ? t("spike.hint.alt") : t("spike.hint.preview")}
-                </p>
-              )}
-              <Button
-                variant="secondary"
-                className="brut-press"
-                onClick={runSpike}
-                disabled={!isAlt}
-              >
-                {t("spike.run")}
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
+            <section className="grid gap-4 md:grid-cols-2">
+              <Card className="frost">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Database className="size-4 text-muted-foreground" /> 코스
+                  </CardTitle>
+                  <CardDescription>
+                    storage <span className="mono">course:*</span> · Phase 0
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {loaded ? (
+                    courses.length > 0 ? (
+                      <ul className="space-y-1 text-sm">
+                        {courses.map((c) => (
+                          <li key={c} className="mono text-fg-300">
+                            {c}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">{t("course.empty")}</p>
+                    )
+                  ) : (
+                    <p className="text-sm text-muted-foreground">아직 로드 안 함.</p>
+                  )}
+                  <Button variant="secondary" size="sm" onClick={loadCourses}>
+                    {t("course.load")}
+                  </Button>
+                </CardContent>
+              </Card>
 
-        {error ? <p className="mono text-xs text-destructive">{error}</p> : null}
+              <Card className="frost">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Activity className="size-4 text-muted-foreground" /> 런타임 스파이크
+                  </CardTitle>
+                  <CardDescription>
+                    <span className="mono">models.list().supportsTools</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {spike ? (
+                    <div className="space-y-1 text-sm">
+                      <p className="text-muted-foreground">
+                        모델 수 <span className="mono text-foreground">{spike.modelCount}</span>
+                      </p>
+                      <p className="text-muted-foreground">
+                        구조화 모델{" "}
+                        <span className="mono text-foreground">{spike.structuredModel ?? "—"}</span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {isAlt ? t("spike.hint.alt") : t("spike.hint.preview")}
+                    </p>
+                  )}
+                  <Button variant="secondary" size="sm" onClick={runSpike} disabled={!isAlt}>
+                    {t("spike.run")}
+                  </Button>
+                </CardContent>
+              </Card>
+            </section>
 
-        {/* 타이포그래피 스펙 (Pretendard Thin/Regular/ExtraBold · 자간 -5%) */}
-        <Card className="brut">
-          <CardHeader>
-            <CardTitle>타이포그래피 — Pretendard</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            <p className="text-4xl font-thin">D-7 · 자간 -5%</p>
-            <p className="text-base font-normal">Regular — 본문/문제 텍스트. 유저는 수식 안 친다, 말한다.</p>
-            <p className="text-lg font-extrabold">ExtraBold — 제목·라벨·브루탈 강조</p>
-          </CardContent>
-        </Card>
+            {error ? <p className="mono text-xs text-destructive">{error}</p> : null}
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
 
 /** 정적 4분면 미리보기. Phase 2에서 d3 force + Lombardi 아크로 교체. */
 function QuadrantPreview() {
   const nodes: { x: number; y: number; r: number; label: string; hot?: boolean }[] = [
-    { x: 78, y: 26, r: 13, label: "대각화", hot: true },
+    { x: 78, y: 26, r: 12, label: "대각화", hot: true },
     { x: 62, y: 40, r: 9, label: "그람슈미트" },
     { x: 30, y: 34, r: 7, label: "고유값" },
     { x: 24, y: 74, r: 6, label: "위상" },
@@ -165,30 +195,47 @@ function QuadrantPreview() {
   ];
   return (
     <svg viewBox="0 0 100 100" className="h-64 w-full" role="img" aria-label="2D 결정 맵 미리보기">
-      <line x1="50" y1="4" x2="50" y2="96" stroke="var(--powder-500)" strokeWidth="0.4" strokeDasharray="2 2" />
-      <line x1="4" y1="50" x2="96" y2="50" stroke="var(--powder-500)" strokeWidth="0.4" strokeDasharray="2 2" />
-      <text x="95" y="46" textAnchor="end" fontSize="3.2" fill="var(--powder-400)">시험확률 →</text>
-      <text x="52" y="8" fontSize="3.2" fill="var(--powder-400)">자신감 ↑</text>
+      <line x1="50" y1="6" x2="50" y2="94" stroke="var(--line-strong)" strokeWidth="0.3" />
+      <line x1="6" y1="50" x2="94" y2="50" stroke="var(--line-strong)" strokeWidth="0.3" />
+      <text x="93" y="46" textAnchor="end" fontSize="3" fill="var(--fg-700)">
+        시험확률 →
+      </text>
+      <text x="52" y="9" fontSize="3" fill="var(--fg-700)">
+        자신감 ↑
+      </text>
       {/* Lombardi 아크 (실선=직접, 점선=간접) */}
-      <path d="M30 34 Q 55 20 78 26" fill="none" stroke="var(--powder-400)" strokeWidth="0.5" />
-      <path d="M62 40 Q 71 32 78 26" fill="none" stroke="var(--powder-400)" strokeWidth="0.5" strokeDasharray="1.5 1.5" />
+      <path d="M30 34 Q 55 20 78 26" fill="none" stroke="var(--fg-700)" strokeWidth="0.4" />
+      <path
+        d="M62 40 Q 71 32 78 26"
+        fill="none"
+        stroke="var(--fg-700)"
+        strokeWidth="0.4"
+        strokeDasharray="1.5 1.5"
+      />
       {nodes.map((n) => (
         <g key={n.label}>
+          {n.hot ? (
+            <circle cx={n.x} cy={n.y} r={n.r + 3} fill="var(--accent-soft)" />
+          ) : null}
           <circle
             cx={n.x}
             cy={n.y}
             r={n.r}
             fill="none"
-            stroke={n.hot ? "var(--hot)" : "var(--powder-300)"}
-            strokeWidth={n.hot ? 1.2 : 0.7}
+            stroke={n.hot ? "var(--accent-1)" : "var(--line-strong)"}
+            strokeWidth={n.hot ? 1 : 0.6}
           />
-          <text x={n.x} y={n.y - n.r - 1.5} textAnchor="middle" fontSize="3" fill="var(--powder-200)">
+          <text x={n.x} y={n.y - n.r - 1.5} textAnchor="middle" fontSize="2.8" fill="var(--fg-300)">
             {n.label}
           </text>
         </g>
       ))}
-      <text x="78" y="50" textAnchor="middle" fontSize="2.8" fill="var(--hot)">🔥 지금</text>
-      <text x="24" y="92" textAnchor="middle" fontSize="2.8" fill="var(--powder-500)">⚠ 버려도 안전</text>
+      <text x="78" y="49" textAnchor="middle" fontSize="2.6" fill="var(--accent-1)">
+        지금
+      </text>
+      <text x="24" y="92" textAnchor="middle" fontSize="2.6" fill="var(--fg-700)">
+        버려도 안전
+      </text>
     </svg>
   );
 }

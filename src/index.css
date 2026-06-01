@@ -22,60 +22,77 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: var(--radius);
-  --radius-md: var(--radius);
+  /* 원시 토큰도 유틸리티로 노출 (text-fg-300, bg-cod-800, text-accent-1 …) */
+  --color-fg-100: var(--fg-100);
+  --color-fg-300: var(--fg-300);
+  --color-fg-500: var(--fg-500);
+  --color-fg-700: var(--fg-700);
+  --color-cod-700: var(--cod-700);
+  --color-cod-800: var(--cod-800);
+  --color-cod-900: var(--cod-900);
+  --color-accent-1: var(--accent-1);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
 }
 
 /*
- * PAIDEIA Exam Radar — 모노톤 디자인 토큰 (plan.md §14)
- * 진한 회색(ink) + 파우더톤 회색(powder) · 브루탈리즘(radius 0) · 글래스 셸.
- * 색으로 의미를 칠하지 않는다 — 무채 1액센트(--hot)만.
+ * PAIDEIA Exam Radar — OpenAI Codex 앱 디자인 (plan.md §14)
+ * Cod Gray 미니멀(따뜻한 뉴트럴 near-black) + off-white + 반투명 머티리얼 + 소프트 라운드.
+ * 브루탈리즘 제거(하드 오프셋·radius 0·모노캡스 없음). 절제된 단일 accent.
+ * 출처: OpenAI 브랜드(Cod Gray + White), Codex 앱(반투명 사이드바·system materials·사이드바/디테일).
  */
 :root {
-  --radius: 0rem; /* 브루탈리즘: 하드 엣지 */
+  --radius: 0.625rem; /* 10px — Codex 소프트 라운드 */
 
-  /* 진한 회색 (Shell / 배경) */
-  --ink-900: #0e0f11;
-  --ink-800: #16181b;
-  --ink-700: #1e2125;
-  --ink-600: #2a2e33;
-  /* 파우더톤 회색 (표면 / 텍스트 / 보더) */
-  --powder-100: #edeef0;
-  --powder-200: #d9dbdf;
-  --powder-300: #bfc3c9;
-  --powder-400: #9aa0a8;
-  --powder-500: #7a828c;
-  /* 글래스 */
-  --glass-bg: rgba(30, 33, 37, 0.55);
-  --glass-stroke: rgba(217, 219, 223, 0.14);
-  --glass-blur: 28px;
-  /* 브루탈 */
-  --brut-border: var(--powder-200);
-  --brut-offset: 4px;
-  /* 단 하나의 액센트 (hover/focus · 골드존) */
-  --hot: #c7cdd4;
+  /* Cod Gray scale (OpenAI 미니멀, 따뜻한 뉴트럴 다크) */
+  --cod-1000: #0a0a0b; /* 앱 배경 */
+  --cod-900: #101012;
+  --cod-800: #161618; /* 카드 / 패널 */
+  --cod-700: #1d1d20; /* elevated / hover */
+  --cod-600: #27272b;
 
-  /* shadcn role 매핑 (dark default) */
-  --background: var(--ink-900);
-  --foreground: var(--powder-100);
-  --card: var(--ink-800);
-  --card-foreground: var(--powder-100);
-  --popover: var(--ink-800);
-  --popover-foreground: var(--powder-100);
-  --primary: var(--powder-100);
-  --primary-foreground: var(--ink-900);
-  --secondary: var(--ink-700);
-  --secondary-foreground: var(--powder-100);
-  --muted: var(--ink-700);
-  --muted-foreground: var(--powder-400);
-  --accent: var(--ink-600);
-  --accent-foreground: var(--powder-100);
-  --destructive: #b4474e;
-  --destructive-foreground: var(--powder-100);
-  --border: var(--ink-600);
-  --input: var(--ink-600);
-  --ring: var(--powder-400);
+  /* off-white 텍스트 (powder) */
+  --fg-100: #f4f4f3;
+  --fg-300: #cacac6;
+  --fg-500: #9a9a95;
+  --fg-700: #6c6c67;
+
+  /* hairline 보더 (저알파 흰색 — Codex 머티리얼) */
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+
+  /* 반투명 (Codex 사이드바 / 탑바) */
+  --glass-bg: rgba(20, 20, 22, 0.68);
+  --glass-blur: 24px;
+
+  /* 절제된 단일 accent (focus · active · 골드존). 한 줄로 교체 가능. */
+  --accent-1: #10a37f;
+  --accent-soft: rgba(16, 163, 127, 0.16);
+
+  /* 소프트 디퓨즈 섀도 (하드 오프셋 아님) */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  /* shadcn role 매핑 (dark) */
+  --background: var(--cod-1000);
+  --foreground: var(--fg-100);
+  --card: rgba(23, 23, 26, 0.55); /* 반투명 — frosted glass 카드 */
+  --card-foreground: var(--fg-100);
+  --popover: var(--cod-800);
+  --popover-foreground: var(--fg-100);
+  --primary: var(--fg-100);
+  --primary-foreground: var(--cod-1000);
+  --secondary: var(--cod-700);
+  --secondary-foreground: var(--fg-100);
+  --muted: var(--cod-700);
+  --muted-foreground: var(--fg-500);
+  --accent: var(--cod-700);
+  --accent-foreground: var(--fg-100);
+  --destructive: #d65f5f;
+  --destructive-foreground: var(--fg-100);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--accent-1);
 }
 
 * {
@@ -86,18 +103,24 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--background);
+  /* 앰비언트 — frosted glass가 굴절할 은은한 배경(없으면 블러가 안 보임) */
+  background:
+    radial-gradient(48rem 32rem at 8% -10%, rgba(16, 163, 127, 0.08), transparent 60%),
+    radial-gradient(42rem 34rem at 104% 4%, rgba(125, 135, 165, 0.07), transparent 58%),
+    var(--cod-1000);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  letter-spacing: -0.05em; /* 전역 -5% 자간 (plan.md §14.2) */
+  letter-spacing: -0.02em; /* Codex 톤에 맞춘 정제된 트래킹 */
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* 모노스페이스 라벨·코드는 자간 0 복원 (가독성) */
 code,
 kbd,
 pre,
 .mono {
+  font-family: "SF Mono", ui-monospace, Menlo, monospace;
   letter-spacing: 0;
 }
 
@@ -109,23 +132,19 @@ select {
   letter-spacing: inherit;
 }
 
-/* ── 3-레이어 프리미티브 (plan.md §14.1) ── */
+/* ── 글래스모피즘 프리미티브 (plan.md §14) ── */
+/* .glass: 자체 반투명 배경 + 블러 (사이드바 / 탑바). */
 .glass {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-stroke);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
-.brut {
-  border: 1.5px solid var(--brut-border);
-  border-radius: 0;
-  box-shadow: var(--brut-offset) var(--brut-offset) 0 var(--powder-300);
-}
-.brut-press:active {
-  box-shadow: 0 0 0 0 transparent;
-  transform: translate(var(--brut-offset), var(--brut-offset));
-}
-.mono {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  text-transform: uppercase;
+/* .frost: 배경 없음 — 블러+상단 하이라이트+소프트 섀도만. 반투명 bg(--card 등) 위에 얹는다. */
+.frost {
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    var(--shadow-card);
 }

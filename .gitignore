@@ -12,7 +12,8 @@ dist-ssr/
 .env.*
 !.env.example
 
-# editor / OS
+# editor / OS / test artifacts
+.playwright-mcp/
 .DS_Store
 .idea/
 .vscode/*

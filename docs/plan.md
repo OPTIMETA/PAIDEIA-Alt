@@ -377,7 +377,7 @@ paideia-alt/                      ← alt-react-plugin-template fork
 ├── src/
 │   ├── alt/                       ← SDK 래퍼: client guard, storage repo(course:*), ai provider(supportsTools 게이트)
 │   │   ├── storage.ts · ai.ts · schemas.ts (zod: Topic, ExamPoint, Session)
-│   ├── design/                    ← §14 토큰: tokens.css(팔레트/자간), Pretendard self-host, glass/brutal 프리미티브
+│   ├── design/                    ← §14 토큰: tokens.css(Cod Gray 팔레트/자간), Pretendard self-host, glass/frost 프리미티브
 │   ├── viz/                       ← Lombardi 2D 결정 맵 (d3 force + arc edges + 4분면)
 │   ├── pipeline/                  ← 수집(ingest)·누적 재랭킹·작전지도 생성
 │   ├── flows/                     ← Accrue / Decide 템포, 오늘의 컷 세션, 예산
@@ -403,53 +403,56 @@ paideia-alt/                      ← alt-react-plugin-template fork
 
 ## 14. 디자인 시스템 (UI 스펙)
 
-> **컨셉 한 줄**: OpenAI Codex macOS 앱의 *절제된 글래스 셸* 위에, *브루탈리즘 모노톤* 데이터 컴포넌트를 얹고, 결정 맵은 *Mark Lombardi식 곡선 아크 네트워크*로 시각화한다. 세 레이어가 역할로 분리되어 충돌하지 않는다.
+> **컨셉 한 줄**: **OpenAI Codex macOS 앱 디자인** — Cod Gray(따뜻한 near-black) + off-white 미니멀, **반투명 글래스모피즘** 머티리얼, 소프트 라운드. 데이터는 *Mark Lombardi식 곡선 아크 네트워크*. (브루탈리즘 폐기 · 2026-06-02 사용자 결정)
 
-### 14.1 3-레이어 모델 (글래스 ↔ 브루탈 충돌 해소)
+### 14.1 레이어 (글래스모피즘 + Codex 소프트 + Viz)
 | 레이어 | 스타일 | 적용 |
 |---|---|---|
-| **Shell** | 글래스모피즘 — `backdrop-filter: blur(20–40px)` + 반투명 + 1px 헤어라인, macOS vibrancy | 상단바, 패널 배경, 세션 오버레이 dim, 모달 |
-| **Component** | 브루탈리즘 모노톤 — `border-radius:0`, 1.5–2px 솔리드 보더, 하드 오프셋 블록, 모노스페이스 캡스 라벨 | 버튼, 카드(오늘의 컷), 슬라이더, 칩, tier 배지 |
-| **Viz** | Mark Lombardi — 곡선 아크 엣지·노드, 단색 선(실선=직접/점선=간접), 손그림 톤 | 2D 결정 맵, 성장 diff, 타임라인 |
+| **Surface (글래스모피즘)** | 반투명 + `backdrop-filter: blur(22–24px) saturate(170%)` + 상단 inset 하이라이트 + hairline 보더 + 소프트 디퓨즈 섀도. **뒤의 은은한 앰비언트 그라데이션이 굴절**(없으면 블러 무의미). | 사이드바·탑바(`.glass`), 카드·패널(`.frost`), 세션 오버레이 |
+| **Control (Codex 소프트)** | radius 10px, 저채도 표면, 정제된 라벨. **하드 오프셋·radius 0·모노캡스 전부 금지.** | 버튼·슬라이더·칩·배지·nav |
+| **Viz (Lombardi)** | 곡선 아크 엣지·노드, 단색 선(실선=직접/점선=간접) | 2D 결정 맵, 성장 diff, 타임라인 |
 
 ### 14.2 타이포그래피
 - **서체 Pretendard** (Variable, self-host — 외부 CDN 금지/샌드박스).
-- **웨이트 3단**: `Thin(100)`=대형 숫자(D-N, 절약시간), `Regular(400)`=본문/문제텍스트, `ExtraBold(800)`=제목·라벨·브루탈 강조.
-- **자간**: 전역 `letter-spacing: -0.05em` (-5%). 모노스페이스 라벨·코드·수식 토큰은 `0` 복원.
+- **웨이트**: 본문 `Regular(400)`, 라벨·제목 `SemiBold(600)`·`ExtraBold(800)`. **`Thin(100)`은 쓰지 않는다**(가늘어 약해 보임 — 큰 숫자 D-N도 SemiBold `tabular-nums`).
+- **자간**: 전역 `letter-spacing: -0.02em`(Codex 톤의 정제된 트래킹 — 기존 -5%는 과해서 완화). 모노스페이스·코드는 `0` 복원.
 - 수식: KaTeX 렌더(증거 드로어의 인용 등), 본문 자간에서 제외.
 
-### 14.3 컬러 팔레트 (모노톤 — 진한 회색 + 파우더톤 회색)
+### 14.3 컬러 (Cod Gray 모노톤 + 절제된 단일 accent)
 ```css
-/* 진한 회색 (Shell/배경, 다크) */
---ink-900:#0E0F11; --ink-800:#16181B; --ink-700:#1E2125; --ink-600:#2A2E33;
-/* 파우더톤 회색 (표면/텍스트/보더, 더스티) */
---powder-100:#EDEEF0; --powder-200:#D9DBDF; --powder-300:#BFC3C9; --powder-400:#9AA0A8; --powder-500:#7A828C;
-/* 글래스 */
---glass-bg:rgba(30,33,37,0.55); --glass-stroke:rgba(217,219,223,0.14); --glass-blur:28px;
-/* 브루탈 */
---brut-border:var(--powder-200); --brut-offset:4px; /* box-shadow: 4px 4px 0 */
-/* 액센트 단 1개 (모노톤 유지) */
---accent:#C7CDD4; /* hover/focus·골드존에만 */
+/* Cod Gray — 따뜻한 near-black 다크 (OpenAI 미니멀) */
+--cod-1000:#0A0A0B; --cod-900:#101012; --cod-800:#161618; --cod-700:#1D1D20; --cod-600:#27272B;
+/* off-white 텍스트 */
+--fg-100:#F4F4F3; --fg-300:#CACAC6; --fg-500:#9A9A95; --fg-700:#6C6C67;
+/* hairline 보더 (저알파 흰색 — Codex 머티리얼) */
+--line:rgba(255,255,255,0.08); --line-strong:rgba(255,255,255,0.14);
+/* 글래스 (반투명) */
+--glass-bg:rgba(20,20,22,0.68); --card:rgba(23,23,26,0.55); --glass-blur:24px;
+/* 단일 accent — focus·active·골드존에만 (한 줄로 교체 가능) */
+--accent-1:#10A37F; --accent-soft:rgba(16,163,127,0.16);
+/* 소프트 디퓨즈 섀도 */
+--shadow-card:0 1px 2px rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.3);
 ```
-- **원칙**: 색으로 의미를 칠하지 않는다. 시험확률·자신감·직접/간접은 **선 굵기·점선·노드 크기·해칭·분면 위치**로 구분. 4분면 골드존/함정존도 색이 아니라 *위치+해칭*. 라이트 모드는 ink↔powder 반전.
+- **원칙**: 거의 무채(Cod Gray + off-white) + accent 1개를 focus/active/골드존에만. 시험확률·자신감·직접/간접은 **분면 위치·노드 크기·선 굵기·점선**으로 구분.
+- **글래스가 보이려면** body에 은은한 앰비언트 radial-gradient 필수(블러가 굴절할 대상). 라이트 모드는 Cod↔fg 반전.
 
-### 14.4 컴포넌트 규칙 (브루탈리즘)
-- 라운드 0, 그라데이션 0, 소프트 섀도 0 → **하드 오프셋 블록**으로 깊이.
-- 버튼/카드: 두꺼운 보더 + 모노스페이스 캡스 라벨(`오늘의 컷`, `버려`, `집중`). hover 시 오프셋 0 "눌림".
-- 슬라이더(예산): 트랙·핸들 모두 하드 엣지. 끌면 맵이 즉시 재배치.
-- tier 배지: 색 대신 **해칭/밀도 블록**(🔥=꽉찬, ⚪=빈 테두리).
+### 14.4 컴포넌트 규칙 (Codex 소프트)
+- radius 10px(`--radius`), 소프트 디퓨즈 섀도, hairline 보더. **하드 오프셋·radius 0·모노캡스 전부 금지.**
+- 카드/패널 = `.frost`(반투명 `--card` + blur + 상단 sheen). 사이드바/탑바 = `.glass`(자체 반투명 bg + blur).
+- 버튼 = shadcn 소프트(라운드, secondary=저채도 표면). 호버=미세 표면 상승.
+- 배지/칩 = 둥근 저채도. tier 강조는 accent ring·노드 크기(색칠 아님).
 
 ### 14.5 Mark Lombardi 결정 맵 (핵심 차별 UI)
 - 엔진: **D3 force + 곡선 아크 엣지**(quadratic Bézier) on SVG. 노드=토픽, 엣지=관계(같은 강의 출현·반복).
 - **4분면 배치**: X=examProb, Y=confidence. 노드 크기 = examPoint weight 합. 미평가는 하단 "미평가" 띠.
-- 라인 규약(Lombardi): **실선=직접/확정, 점선=간접/추정**, 화살표=반복 선후. 단색(파우더), 강조만 1액센트.
+- 라인 규약(Lombardi): **실선=직접/확정, 점선=간접/추정**, 화살표=반복 선후. 단색(off-white/Cod Gray), 강조만 `--accent-1`.
 - **성장 diff**: 새 강의 노드가 force-sim으로 합류, 반복 토픽은 확률 상향 플래시. framer-motion 공유요소 전환.
-- 라벨은 Pretendard ExtraBold 소형 캡스, 노드 근접. 손그림 톤은 약한 아크 곡률 + 헤어라인으로(과한 텍스처 금지 → 글래스 셸과 톤 유지).
+- 라벨은 Pretendard SemiBold 소형, 노드 근접. 손그림 톤은 약한 아크 곡률 + hairline으로(과한 텍스처 금지 → 글래스 머티리얼과 톤 유지).
 
-### 14.6 화면 적용
-- **홈/세션/작전지도 패널** = 글래스 셸. 내부 카드·버튼·슬라이더 = 브루탈 컴포넌트.
+### 14.6 레이아웃 (Codex 사이드바/디테일)
+- **좌측 `.glass` 사이드바**(앱명·nav) + **우측 `.glass` 탑바**(코스·D-N) + **본문**(frosted 카드 + hero 결정맵). NavigationSplitView 감각.
 - **2D 결정 맵 / 성장 diff / 타임라인** = Lombardi Viz 레이어.
-- **오늘의 컷** = 글래스로 맵을 덮고 브루탈 카드 스와이프. 끝나면 바뀐 맵으로 복귀.
+- **오늘의 컷** = `.glass` 오버레이로 맵을 덮고 카드 스와이프. 끝나면 바뀐 맵으로 복귀.
 
 ---
 
