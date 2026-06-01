@@ -43,7 +43,7 @@ function isHot(examProb: number, confidence: number | null): boolean {
 }
 
 function radius(examProb: number): number {
-  return 9 + examProb * 17; // 9~26 (라벨 공간 확보 위해 축소)
+  return 4 + examProb * 11; // 4~15 (NODEPROMPT: 작은 노드, weight 비례)
 }
 
 function truncate(s: string, n: number): string {
@@ -174,7 +174,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
     const sim = forceSimulation<SimNode>(nodes)
       .force("x", forceX<SimNode>((d) => d.tx).strength(0.16))
       .force("y", forceY<SimNode>((d) => d.ty).strength(0.16))
-      .force("collide", forceCollide<SimNode>((d) => d.r + 16))
+      .force("collide", forceCollide<SimNode>((d) => d.r + 13))
       .stop();
     for (let i = 0; i < 340; i++) sim.tick();
     simRef.current = sim;
@@ -382,14 +382,11 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
               className="cursor-grab active:cursor-grabbing"
               opacity={dim ? 0.22 : faded ? 0.4 : 1}
             >
-              {n.hot ? <circle r={n.r + 6} fill="var(--accent-soft)" /> : null}
               <circle
-                r={n.r}
-                fill={
-                  n.hot ? "var(--accent-1)" : n.id === hovered ? "rgba(0,0,0,0.06)" : "#ffffff"
-                }
-                stroke={n.hot ? "var(--accent-1)" : "var(--line-strong)"}
-                strokeWidth={n.hot ? 1.5 : 1}
+                r={n.id === hovered ? n.r * 1.25 : n.r}
+                fill={n.hot ? "var(--accent-1)" : n.id === hovered ? "#c4c4c4" : "#e2e2e2"}
+                stroke={n.hot ? "none" : "rgba(0,0,0,0.18)"}
+                strokeWidth={1}
               />
             </g>
           );
