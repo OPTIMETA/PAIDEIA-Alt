@@ -341,13 +341,13 @@ export default function App() {
               <PanelLeft className="size-4" />
             </button>
             <div className="flex items-baseline gap-2 whitespace-nowrap sm:gap-3">
-              <span className="hidden max-w-[120px] truncate text-sm text-muted-foreground sm:inline sm:max-w-[200px]">
+              <span className="hidden max-w-[160px] truncate text-sm text-muted-foreground lg:inline">
                 {courseName}
               </span>
               <span className="text-2xl font-normal tabular-nums tracking-tight sm:text-3xl">
                 {dDay(examDate)}
               </span>
-              <span className="hidden text-xs text-muted-foreground md:inline">
+              <span className="hidden text-xs text-muted-foreground lg:inline">
                 {topics.length} 토픽 · 골드존 {goldCount}
               </span>
               {growth ? (
@@ -359,8 +359,8 @@ export default function App() {
           </div>
 
           <div className="flex shrink-0 items-center gap-4">
-            <div className="hidden shrink-0 items-center gap-2 whitespace-nowrap text-xs text-muted-foreground lg:flex">
-              <span>예산</span>
+            <div className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground md:flex">
+              <span className="hidden lg:inline">예산</span>
               <input
                 type="range"
                 min={0}
@@ -371,14 +371,14 @@ export default function App() {
                   const v = Number(e.target.value);
                   setBudget(v >= total ? null : v);
                 }}
-                className="w-28"
+                className="w-20 lg:w-28"
                 style={{ accentColor: "var(--accent-1)" }}
                 aria-label="시간 예산"
               />
-              <span className="mono w-12 text-foreground">
+              <span className="mono w-10 text-foreground">
                 {budget == null ? "전체" : `${(budget / 60).toFixed(1)}h`}
               </span>
-              {budget != null ? <span>· 절약 {savedMin}분</span> : null}
+              {budget != null ? <span className="hidden lg:inline">· 절약 {savedMin}분</span> : null}
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5">

@@ -64,6 +64,15 @@ function truncate(s: string, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 }
 
+// 라벨 폭 추정 — 한글/CJK는 거의 정사각(≈size), 라틴/숫자는 좁음. 충돌 회피 정확도용.
+function labelWidth(text: string, size: number): number {
+  let w = 0;
+  for (const ch of text) {
+    w += /[　-鿿가-힯＀-￯]/.test(ch) ? size * 0.96 : size * 0.52;
+  }
+  return w;
+}
+
 function layout(
   examProb: number,
   confidence: number | null,
@@ -289,10 +298,13 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   const cy = PAD_TOP + 0.5 * (ratedBottom - PAD_TOP);
   const hoverNeighbors = hovered ? (neighbors.get(hovered) ?? new Set<string>()) : new Set<string>();
 
-  // 라벨 충돌 회피: 중요도 순(골드>호버>시험확률)으로 배치, 겹치면 숨김
+  // 라벨 충돌 회피: 중요도 순 배치, 아래→위 스태거, 둘 다 겹치면 숨김(호버/골드는 폴백 표시)
   type Placed = { x: number; y: number; w: number; h: number };
   const placed: Placed[] = [];
-  const labelFor = new Map<string, { text: string; size: number; anchor: "start" | "middle" | "end" }>();
+  const labelFor = new Map<
+    string,
+    { text: string; size: number; anchor: "start" | "middle" | "end"; y: number }
+  >();
   const ordered = [...nodes].sort((a, b) => {
     const pa = (a.id === hovered ? 3 : 0) + (a.hot ? 2 : 0) + a.examProb;
     const pb = (b.id === hovered ? 3 : 0) + (b.hot ? 2 : 0) + b.examProb;
@@ -301,10 +313,9 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   for (const n of ordered) {
     const forced = n.id === hovered || hoverNeighbors.has(n.id);
     const size = n.id === hovered ? 13 : 11;
-    const text = forced ? n.name : truncate(n.name, 18);
-    const boxW = text.length * size * 0.6;
+    const text = forced ? n.name : truncate(n.name, 16);
+    const boxW = labelWidth(text, size);
     const boxH = size * 1.1;
-    const ly = n.y + n.r + size + 2;
     let anchor: "start" | "middle" | "end" = "middle";
     let bx = n.x - boxW / 2;
     if (n.x < PAD_X + boxW / 2) {
@@ -314,29 +325,51 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
       anchor = "end";
       bx = n.x - boxW + size * 0.3;
     }
-    const box: Placed = { x: bx, y: ly - boxH, w: boxW, h: boxH + 2 };
-    const overlaps = placed.some(
-      (p) => box.x < p.x + p.w && box.x + box.w > p.x && box.y < p.y + p.h && box.y + box.h > p.y,
-    );
-    // 골드/호버/이웃은 항상 표시, 그 외는 겹치면 숨김
-    if (forced || n.hot || !overlaps) {
-      labelFor.set(n.id, { text, size, anchor });
-      placed.push(box);
+    const fits = (baseY: number): Placed | null => {
+      const box: Placed = { x: bx, y: baseY - boxH, w: boxW, h: boxH + 2 };
+      const ov = placed.some(
+        (p) => box.x < p.x + p.w && box.x + box.w > p.x && box.y < p.y + p.h && box.y + box.h > p.y,
+      );
+      return ov ? null : box;
+    };
+    const below = n.y + n.r + size + 2;
+    const above = n.y - n.r - 4;
+    let chosenY: number | null = null;
+    const b1 = fits(below);
+    if (b1) {
+      chosenY = below;
+      placed.push(b1);
+    } else {
+      const b2 = fits(above);
+      if (b2) {
+        chosenY = above;
+        placed.push(b2);
+      } else if (forced || n.hot) {
+        chosenY = below; // 겹쳐도 표시(골드/호버는 숨기지 않음)
+      }
     }
+    if (chosenY !== null) labelFor.set(n.id, { text, size, anchor, y: chosenY });
   }
 
   return (
-    <div ref={wrapRef} className="relative h-full w-full">
-      <svg
-        ref={svgRef}
-        width="100%"
-        height="100%"
-        viewBox={`0 0 ${w} ${h}`}
-        preserveAspectRatio="xMidYMid meet"
-        className="touch-none select-none"
-        role="img"
-        aria-label="2D 결정 맵"
-      >
+    <div className="flex h-full w-full flex-col">
+      {/* 범례 — 맵 위 별도 줄(겹침 방지) */}
+      <div className="shrink-0 px-3 pb-1 pt-1.5 text-[10px] leading-tight text-muted-foreground">
+        <b className="text-foreground">X →</b> 시험확률(교수 발화·반복) ·{" "}
+        <b className="text-foreground">Y ↑</b> 자신감 ·{" "}
+        <span style={{ color: "var(--accent-1)" }}>●</span> 골드존 = 지금 할 것 · 🎙 교수 강조
+      </div>
+      <div ref={wrapRef} className="relative min-h-0 flex-1">
+        <svg
+          ref={svgRef}
+          width="100%"
+          height="100%"
+          viewBox={`0 0 ${w} ${h}`}
+          preserveAspectRatio="xMidYMid meet"
+          className="touch-none select-none"
+          role="img"
+          aria-label="2D 결정 맵"
+        >
         {/* 사분면 가이드 */}
         <line x1={cx} y1={PAD_TOP - 14} x2={cx} y2={ratedBottom + 6} stroke="var(--line)" strokeWidth={1} />
         <line x1={PAD_X - 14} y1={cy} x2={w - PAD_X + 14} y2={cy} stroke="var(--line)" strokeWidth={1} />
@@ -424,7 +457,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
             <text
               key={n.id}
               x={n.x}
-              y={n.y + n.r + lab.size + 2}
+              y={lab.y}
               textAnchor={lab.anchor}
               fontSize={lab.size}
               fill={n.hot ? "var(--accent-1)" : "var(--fg-100)"}
@@ -441,16 +474,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
             </text>
           );
         })}
-      </svg>
-
-      {/* 범례 — 사분면·신호 의미 (NODEPROMPT 미니멀) */}
-      <div className="pointer-events-none absolute left-3 top-2.5 text-[10px] leading-relaxed text-muted-foreground">
-        <div>
-          <b className="text-foreground">X →</b> 시험확률(교수 발화·반복) · <b className="text-foreground">Y ↑</b> 자신감
-        </div>
-        <div>
-          <span style={{ color: "var(--accent-1)" }}>●</span> 골드존 = 지금 할 것 · 🎙 교수 강조
-        </div>
+        </svg>
       </div>
     </div>
   );
