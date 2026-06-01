@@ -164,18 +164,24 @@ export default function App() {
   );
 
   // 수집(Accrue) — Alt: 연결 강의 ingest. 성장 diff 표시.
-  const handleCollect = useCallback(async () => {
-    if (!activeId) return;
-    try {
-      const res = await collectCourse(activeId);
-      setTopics(res.topics);
-      setExamPoints(res.examPoints);
-      setGrowth(`강의 ${res.ingested}개 수집`);
-      window.setTimeout(() => setGrowth(null), 4000);
-    } catch (e) {
-      setSpike(e instanceof Error ? e.message : String(e));
-    }
-  }, [activeId]);
+  const handleCollect = useCallback(
+    async (noteId?: number) => {
+      if (!activeId) return;
+      try {
+        // noteId 지정(transcriptUpdated) → 그 노트만 재수집(이미 ingested여도). 없으면 pending 전체.
+        const res = await collectCourse(activeId, noteId);
+        setTopics(res.topics);
+        setExamPoints(res.examPoints);
+        if (res.ingested > 0) {
+          setGrowth(`강의 ${res.ingested}개 수집`);
+          window.setTimeout(() => setGrowth(null), 4000);
+        }
+      } catch (e) {
+        setSpike(e instanceof Error ? e.message : String(e));
+      }
+    },
+    [activeId],
+  );
 
   // 프리뷰: 데모 강의 병합으로 Accrue(코스가 자란다) + 성장 diff 시연
   const handleDemoGrow = useCallback(() => {
@@ -201,8 +207,8 @@ export default function App() {
     let unsub: (() => Promise<void>) | null = null;
     void (async () => {
       try {
-        unsub = await alt.events.subscribe("transcriptUpdated", () => {
-          void handleCollect();
+        unsub = await alt.events.subscribe("transcriptUpdated", (payload) => {
+          void handleCollect(payload.noteId);
         });
       } catch {
         /* noop */
@@ -322,7 +328,11 @@ export default function App() {
               >
                 <Eye className="size-4" /> 갭
               </Button>
-              <Button variant="ghost" size="sm" onClick={isAlt ? handleCollect : handleDemoGrow}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={isAlt ? () => void handleCollect() : handleDemoGrow}
+              >
                 <Sparkles className="size-4" /> {isAlt ? "수집" : "데모 강의"}
               </Button>
               <Button variant="ghost" size="sm" onClick={runSpike} disabled={!isAlt}>

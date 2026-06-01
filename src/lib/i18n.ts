@@ -1,5 +1,7 @@
-// 키 기반 i18n 스캐폴드 (plan.md §10, Phase 0). 번역은 Phase 4에서 채움.
-// alt.locale은 SDK에 없음 → navigator.language로 감지 (Alt webview·프리뷰 공통).
+// 키 기반 i18n (plan.md §10). host UI 언어를 alt.settings.get("language")로 감지(정규 패턴,
+// alt-quiz-plugin 참고). 프리뷰(Alt 밖)는 navigator.language 폴백. 번역은 점진 확장.
+import { alt, hasAltRuntime } from "@/alt/client";
+
 type Dict = Record<string, string>;
 
 const ko: Dict = {
@@ -26,11 +28,27 @@ const en: Dict = {
   "spike.hint.preview": "Run inside the Alt runtime",
 };
 
-const lang: "ko" | "en" =
-  typeof navigator !== "undefined" && navigator.language.startsWith("en") ? "en" : "ko";
+let lang: "ko" | "en" = "ko";
 
-const dict: Dict = lang === "en" ? en : ko;
+function resolve(lc: string | null | undefined): "ko" | "en" {
+  return lc && lc.toLowerCase().startsWith("en") ? "en" : "ko";
+}
+
+/** host 언어 감지. Alt: settings("language"), 프리뷰: navigator. main.tsx에서 렌더 전 호출. */
+export async function initLocale(): Promise<void> {
+  if (hasAltRuntime()) {
+    try {
+      const v = await alt.settings.get("language");
+      lang = resolve(typeof v === "string" ? v : null);
+      return;
+    } catch {
+      /* 호스트 없음/실패 → navigator 폴백 */
+    }
+  }
+  if (typeof navigator !== "undefined") lang = resolve(navigator.language);
+}
 
 export function t(key: string): string {
+  const dict = lang === "en" ? en : ko;
   return dict[key] ?? ko[key] ?? key;
 }

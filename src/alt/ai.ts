@@ -3,7 +3,7 @@
 // 단 fetch shim은 투명 프록시 → structured output은 상류 모델 supportsTools에 종속.
 import { createAltProvider } from "alt-plugin-sdk/ai";
 import { alt, hasAltRuntime } from "@/alt/client";
-import type { PluginAiModelInfo } from "alt-plugin-sdk";
+import type { PluginAiModelId, PluginAiModelInfo } from "alt-plugin-sdk";
 import { generateObject } from "ai";
 import type { ZodType } from "zod";
 
@@ -11,7 +11,7 @@ import type { ZodType } from "zod";
  * supportsTools 게이트: generateObject는 tool/JSON mode 지원 모델에서만 신뢰 가능.
  * 없으면 호출부가 평문+zod.safeParse fallback으로 분기 (§7.3).
  */
-export async function pickStructuredModel(): Promise<string | null> {
+export async function pickStructuredModel(): Promise<PluginAiModelId | null> {
   if (!hasAltRuntime()) return null;
   try {
     const models = await alt.ai.models.list();
@@ -26,9 +26,9 @@ export async function pickStructuredModel(): Promise<string | null> {
 export async function extractObject<T>(
   schema: ZodType<T>,
   prompt: string,
-  modelId: string,
+  modelId: PluginAiModelId,
 ): Promise<T> {
-  const provider = createAltProvider();
+  const provider = createAltProvider({ model: modelId });
   const { object } = await generateObject({
     model: provider.languageModel(modelId),
     schema,
