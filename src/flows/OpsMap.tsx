@@ -45,8 +45,8 @@ export function OpsMap({
 
   return (
     <div className="absolute inset-0 z-30 grid place-items-center p-4">
-      <div className="glass absolute inset-0" />
-      <div className="frost relative max-h-[88%] w-[min(94%,560px)] overflow-auto rounded-2xl border p-6">
+      <div className="glass anim-overlay absolute inset-0" />
+      <div className="frost anim-panel relative max-h-[88%] w-[min(94%,560px)] overflow-auto rounded-2xl border p-6">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <p className="text-xs text-muted-foreground">

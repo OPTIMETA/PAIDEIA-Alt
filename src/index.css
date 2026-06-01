@@ -50,45 +50,45 @@
   --fg-500: #888888;
   --fg-700: #aaaaaa;
 
-  /* 헤어라인 보더 (저알파 흑색) */
-  --line: rgba(0, 0, 0, 0.1);
-  --line-strong: rgba(0, 0, 0, 0.18);
+  /* 헤어라인 보더 (저알파 근사-흑 #0d0d0d, 순수 흑 미사용) */
+  --line: rgba(13, 13, 13, 0.1);
+  --line-strong: rgba(13, 13, 13, 0.18);
 
-  /* 라이트 frosted 글래스 (NODEPROMPT blur 10) */
-  --glass-bg: rgba(255, 255, 255, 0.85);
+  /* 라이트 frosted 글래스 (NODEPROMPT blur 10) — 근사-흰 패널 */
+  --glass-bg: rgba(250, 250, 250, 0.82);
   --glass-blur: 10px;
 
-  /* 단일 강조 = 흑 (모노크롬), 약한 강조 표면 */
+  /* 단일 강조 = 근사-흑 (모노크롬), 약한 강조 표면 */
   --accent-1: #1a1a1a;
-  --accent-soft: rgba(0, 0, 0, 0.06);
+  --accent-soft: rgba(13, 13, 13, 0.06);
 
   /* 소프트 섀도 (라이트) */
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.07);
+  --shadow-card: 0 1px 2px rgba(13, 13, 13, 0.05), 0 8px 24px rgba(13, 13, 13, 0.07);
 
-  /* 배경 스케일 (cod-* 이름 유지 — 라벨 헤일로 var(--cod-1000)=흰색 등) */
-  --cod-1000: #ffffff;
+  /* 배경 스케일 (cod-* 이름 유지 — 라벨 헤일로 var(--cod-1000)=근사-흰 #fafafa) */
+  --cod-1000: #fafafa;
   --cod-900: #fafafa;
-  --cod-800: #ffffff;
+  --cod-800: #fafafa;
   --cod-700: #f0f0f0;
   --cod-600: #e8e8e8;
 
-  /* shadcn role 매핑 (light) */
-  --background: #ffffff;
+  /* shadcn role 매핑 (light) — 순수 흑/백 미사용: 캔버스 #f2f2f2 · 패널 #fafafa · 표면 #e8e8e8 */
+  --background: #f2f2f2;
   --foreground: var(--fg-100);
-  --card: rgba(255, 255, 255, 0.92);
+  --card: rgba(250, 250, 250, 0.92);
   --card-foreground: var(--fg-100);
-  --popover: #ffffff;
+  --popover: #fafafa;
   --popover-foreground: var(--fg-100);
   --primary: #1a1a1a;
-  --primary-foreground: #ffffff;
-  --secondary: #f2f2f2;
+  --primary-foreground: #f2f2f2;
+  --secondary: #e8e8e8;
   --secondary-foreground: var(--fg-100);
-  --muted: #f2f2f2;
+  --muted: #ececec;
   --muted-foreground: var(--fg-500);
-  --accent: #f2f2f2;
+  --accent: #e8e8e8;
   --accent-foreground: var(--fg-100);
   --destructive: #cc0000;
-  --destructive-foreground: #ffffff;
+  --destructive-foreground: #f2f2f2;
   --border: var(--line);
   --input: var(--line-strong);
   --ring: #1a1a1a;
@@ -169,4 +169,60 @@ input[type="range"]::-moz-range-thumb {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
   backdrop-filter: blur(var(--glass-blur)) saturate(120%);
   box-shadow: var(--shadow-card);
+}
+
+/* ── 모션 (부드러운 등장·전환) ── */
+/* 부드러운 감속 이징 (등장/포커싱 공통) */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 모달 백드롭/패널 등장 — 덜컹 없이 부드럽게 */
+.anim-overlay {
+  animation: overlayIn 180ms ease-out both;
+}
+.anim-panel {
+  animation: panelIn 240ms var(--ease-out) both;
+}
+@keyframes drawerIn {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* 우측 증거 드로어 슬라이드-인 */
+.anim-drawer {
+  animation: drawerIn 240ms var(--ease-out) both;
+}
+
+/* 접근성: 모션 최소화 선호 시 등장 애니메이션 생략 */
+@media (prefers-reduced-motion: reduce) {
+  .anim-overlay,
+  .anim-panel,
+  .anim-drawer {
+    animation: none;
+  }
 }

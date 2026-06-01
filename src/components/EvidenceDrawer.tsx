@@ -29,7 +29,7 @@ export function EvidenceDrawer({
   };
 
   return (
-    <div className="frost absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l">
+    <div className="frost anim-drawer absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l">
       <div className="flex items-start justify-between border-b px-4 py-3">
         <div>
           <p className="text-xs text-muted-foreground">증거 · 교수 발화</p>

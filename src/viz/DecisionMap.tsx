@@ -210,15 +210,27 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     });
     nodesRef.current = nodes;
 
+    const firstLayout = prev.size === 0;
     const sim = forceSimulation<SimNode>(nodes)
+      .velocityDecay(0.55) // 관성↓ → 흔들림 적게, 부드럽게 정착
+      .alphaDecay(0.05) // ~1.2s에 걸쳐 식음
       .force("x", forceX<SimNode>((d) => d.tx).strength(0.16))
       .force("y", forceY<SimNode>((d) => d.ty).strength(0.16))
-      .force("collide", forceCollide<SimNode>((d) => d.r + 13))
-      .stop();
-    for (let i = 0; i < 340; i++) sim.tick();
+      .force("collide", forceCollide<SimNode>((d) => d.r + 13));
     simRef.current = sim;
-    rerender();
+    if (firstLayout) {
+      // 첫 배치: 깜빡임 없이 정돈된 상태로 시작(애니메이션 없음)
+      sim.stop();
+      for (let i = 0; i < 300; i++) sim.tick();
+      sim.on("tick", rerender);
+      rerender();
+    } else {
+      // 크기·데이터 변경: 이전 위치에서 새 자리로 부드럽게 글라이드
+      sim.on("tick", rerender);
+      sim.alpha(0.6).restart();
+    }
     return () => {
+      sim.on("tick", null);
       sim.stop();
     };
   }, [topics, size]);
@@ -248,7 +260,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
       const sim = simRef.current;
       if (sim) {
         sim.on("tick", rerender);
-        sim.alphaTarget(0.3).restart();
+        sim.alphaTarget(0.12).restart(); // 낮은 목표 알파 → 드래그 중 떨림 적게
       }
     }
     const rect = svg.getBoundingClientRect();
@@ -269,9 +281,8 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     if (movedRef.current) {
       const sim = simRef.current;
       if (sim) {
-        sim.on("tick", null);
+        // 급정지 대신 목표 알파 0 → 부드럽게 식으며 제자리에 정착
         sim.alphaTarget(0);
-        sim.stop();
       }
       const { w, h } = dimsRef.current;
       const r = invert(n.fx ?? n.x, n.fy ?? n.y, w, h);
@@ -396,7 +407,13 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
         </g>
 
         {/* backbone 아크 (faint) */}
-        <g fill="none" stroke="var(--fg-700)" strokeWidth={1} opacity={hovered ? 0.06 : 0.16}>
+        <g
+          fill="none"
+          stroke="var(--fg-700)"
+          strokeWidth={1}
+          opacity={hovered ? 0.06 : 0.16}
+          style={{ transition: "opacity 220ms ease" }}
+        >
           {backbone.map((e, i) => {
             const a = byId.get(e.a);
             const b = byId.get(e.b);
@@ -431,12 +448,16 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
               onMouseLeave={() => setHovered((cur) => (cur === n.id ? null : cur))}
               className="cursor-grab active:cursor-grabbing"
               opacity={dim ? 0.22 : faded ? 0.4 : 1}
+              style={{ transition: "opacity 220ms cubic-bezier(0.22, 1, 0.36, 1)" }}
             >
               <circle
                 r={n.id === hovered ? n.r * 1.25 : n.r}
                 fill={n.hot ? "var(--accent-1)" : n.id === hovered ? "#c4c4c4" : "#e2e2e2"}
-                stroke={n.hot ? "none" : "rgba(0,0,0,0.18)"}
+                stroke={n.hot ? "none" : "var(--line-strong)"}
                 strokeWidth={1}
+                style={{
+                  transition: "r 220ms cubic-bezier(0.22, 1, 0.36, 1), fill 200ms ease, stroke 200ms ease",
+                }}
               />
               {signalCounts && (signalCounts.get(n.id) ?? 0) > 0 ? (
                 <text x={n.r * 0.82} y={-n.r * 0.82 + 3} fontSize={12} textAnchor="middle">
@@ -468,6 +489,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
                 stroke: "var(--cod-1000)",
                 strokeWidth: 3.5,
                 strokeLinejoin: "round",
+                transition: "opacity 200ms ease",
               }}
             >
               {lab.text}
