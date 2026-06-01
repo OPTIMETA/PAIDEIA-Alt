@@ -33,7 +33,7 @@ export function EvidenceDrawer({
       <div className="flex items-start justify-between border-b px-4 py-3">
         <div>
           <p className="text-xs text-muted-foreground">증거 · 교수 발화</p>
-          <p className="text-base font-extrabold">{topic.name}</p>
+          <p className="text-base font-normal">{topic.name}</p>
         </div>
         <button
           type="button"
@@ -46,7 +46,7 @@ export function EvidenceDrawer({
       </div>
       <div className="flex items-center gap-3 border-b px-4 py-2 text-xs text-muted-foreground">
         <span>
-          시험확률 <span className="font-semibold text-foreground">{Math.round(topic.examProb * 100)}%</span>
+          시험확률 <span className="font-normal text-foreground">{Math.round(topic.examProb * 100)}%</span>
         </span>
         <span>신호 {points.length}건</span>
       </div>

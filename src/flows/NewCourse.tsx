@@ -56,7 +56,7 @@ export function NewCourse({
         <div className="mb-5 flex items-start justify-between">
           <div>
             <p className="text-xs text-muted-foreground">새 코스</p>
-            <p className="text-xl font-extrabold">무엇을 준비하나요</p>
+            <p className="text-xl font-normal">무엇을 준비하나요</p>
           </div>
           <button
             type="button"

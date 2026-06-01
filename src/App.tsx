@@ -255,12 +255,12 @@ export default function App() {
             <Radar className="size-4" style={{ color: "var(--accent-1)" }} />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-extrabold">{t("app.title")}</p>
+            <p className="text-sm font-normal">{t("app.title")}</p>
             <p className="text-[11px] text-muted-foreground">by Optimeta</p>
           </div>
         </div>
 
-        <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="mb-1.5 px-1 text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
           코스
         </p>
         <nav className="flex-1 space-y-0.5 overflow-auto">
@@ -300,14 +300,14 @@ export default function App() {
             <span className="max-w-[200px] truncate text-sm text-muted-foreground">
               {courseName}
             </span>
-            <span className="text-3xl font-semibold tabular-nums tracking-tight">
+            <span className="text-3xl font-normal tabular-nums tracking-tight">
               {dDay(examDate)}
             </span>
             <span className="text-xs text-muted-foreground">
               {topics.length} 토픽 · 골드존 {goldCount}
             </span>
             {growth ? (
-              <span className="text-xs font-semibold" style={{ color: "var(--accent-1)" }}>
+              <span className="text-xs font-normal" style={{ color: "var(--accent-1)" }}>
                 ↑ {growth}
               </span>
             ) : null}

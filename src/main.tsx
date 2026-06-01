@@ -1,6 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-// Pretendard self-host (CDN 금지 — 샌드박스). dynamic-subset: 필요한 글리프만 로드.
+// 폰트 self-host (CDN 금지 — 샌드박스). DM Sans = Latin(NODEPROMPT 형식), Pretendard = 한글 폴백.
+import "@fontsource/dm-sans/300.css";
+import "@fontsource/dm-sans/400.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./index.css";
 import App from "./App.tsx";

@@ -385,9 +385,11 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds }: Props) {
               {n.hot ? <circle r={n.r + 6} fill="var(--accent-soft)" /> : null}
               <circle
                 r={n.r}
-                fill={n.id === hovered ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.035)"}
+                fill={
+                  n.hot ? "var(--accent-1)" : n.id === hovered ? "rgba(0,0,0,0.06)" : "#ffffff"
+                }
                 stroke={n.hot ? "var(--accent-1)" : "var(--line-strong)"}
-                strokeWidth={n.hot ? 2 : 1.25}
+                strokeWidth={n.hot ? 1.5 : 1}
               />
             </g>
           );

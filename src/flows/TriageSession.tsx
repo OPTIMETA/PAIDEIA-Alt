@@ -47,7 +47,7 @@ export function TriageSession({ topics, onRate, onDrop, onClose }: Props) {
 
         {done ? (
           <div className="py-6 text-center">
-            <p className="mb-1 text-xl font-extrabold">분류 완료</p>
+            <p className="mb-1 text-xl font-normal">분류 완료</p>
             <p className="mb-5 text-sm text-muted-foreground">
               맵이 갱신됐습니다. 골드존부터 시작하세요.
             </p>
@@ -57,12 +57,12 @@ export function TriageSession({ topics, onRate, onDrop, onClose }: Props) {
           <>
             <div className="mb-6 text-center">
               <p
-                className="mb-2 text-xs font-semibold"
+                className="mb-2 text-xs font-normal"
                 style={{ color: cur.examProb >= 0.6 ? "var(--accent-1)" : "var(--fg-500)" }}
               >
                 시험확률 {Math.round(cur.examProb * 100)}%
               </p>
-              <p className="text-2xl font-extrabold">{cur.name}</p>
+              <p className="text-2xl font-normal">{cur.name}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" onClick={() => rate(3)}>

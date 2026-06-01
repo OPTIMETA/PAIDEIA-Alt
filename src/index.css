@@ -22,7 +22,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  /* 원시 토큰도 유틸리티로 노출 (text-fg-300, bg-cod-800, text-accent-1 …) */
   --color-fg-100: var(--fg-100);
   --color-fg-300: var(--fg-300);
   --color-fg-500: var(--fg-500);
@@ -37,62 +36,62 @@
 }
 
 /*
- * PAIDEIA Exam Radar — OpenAI Codex 앱 디자인 (plan.md §14)
- * Cod Gray 미니멀(따뜻한 뉴트럴 near-black) + off-white + 반투명 머티리얼 + 소프트 라운드.
- * 브루탈리즘 제거(하드 오프셋·radius 0·모노캡스 없음). 절제된 단일 accent.
- * 출처: OpenAI 브랜드(Cod Gray + White), Codex 앱(반투명 사이드바·system materials·사이드바/디테일).
+ * PAIDEIA Exam Radar — NODEPROMPT 디자인 형식 (plan.md §14)
+ * 라이트 에디토리얼 미니멀: 흰 배경 + #1a1a1a 텍스트 + DM Sans 300 + 흰색 frosted 패널(blur 10px)
+ * + 헤어라인 흑색 보더 + 그라데이션 그레이 텍스트 + 흑색 단일 강조 + #c00 위험색.
+ * 색으로 의미를 칠하지 않는다(흑/백/그레이 + 위험 1색).
  */
 :root {
-  --radius: 0.625rem; /* 10px — Codex 소프트 라운드 */
+  --radius: 0.5rem;
 
-  /* Cod Gray scale (OpenAI 미니멀, 따뜻한 뉴트럴 다크) */
-  --cod-1000: #0a0a0b; /* 앱 배경 */
-  --cod-900: #101012;
-  --cod-800: #161618; /* 카드 / 패널 */
-  --cod-700: #1d1d20; /* elevated / hover */
-  --cod-600: #27272b;
+  /* 그라데이션 그레이 텍스트 (fg-100=가장 진함) */
+  --fg-100: #1a1a1a;
+  --fg-300: #555555;
+  --fg-500: #888888;
+  --fg-700: #aaaaaa;
 
-  /* off-white 텍스트 (powder) */
-  --fg-100: #f4f4f3;
-  --fg-300: #cacac6;
-  --fg-500: #9a9a95;
-  --fg-700: #6c6c67;
+  /* 헤어라인 보더 (저알파 흑색) */
+  --line: rgba(0, 0, 0, 0.1);
+  --line-strong: rgba(0, 0, 0, 0.18);
 
-  /* hairline 보더 (저알파 흰색 — Codex 머티리얼) */
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.14);
+  /* 라이트 frosted 글래스 (NODEPROMPT blur 10) */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-blur: 10px;
 
-  /* 반투명 (Codex 사이드바 / 탑바) — 투명도를 높여 글래스가 보이게 */
-  --glass-bg: rgba(18, 18, 20, 0.55);
-  --glass-blur: 26px;
+  /* 단일 강조 = 흑 (모노크롬), 약한 강조 표면 */
+  --accent-1: #1a1a1a;
+  --accent-soft: rgba(0, 0, 0, 0.06);
 
-  /* 절제된 단일 accent (focus · active · 골드존). 한 줄로 교체 가능. */
-  --accent-1: #10a37f;
-  --accent-soft: rgba(16, 163, 127, 0.16);
+  /* 소프트 섀도 (라이트) */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 24px rgba(0, 0, 0, 0.07);
 
-  /* 소프트 디퓨즈 섀도 (하드 오프셋 아님) */
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 30px rgba(0, 0, 0, 0.3);
+  /* 배경 스케일 (cod-* 이름 유지 — 라벨 헤일로 var(--cod-1000)=흰색 등) */
+  --cod-1000: #ffffff;
+  --cod-900: #fafafa;
+  --cod-800: #ffffff;
+  --cod-700: #f0f0f0;
+  --cod-600: #e8e8e8;
 
-  /* shadcn role 매핑 (dark) */
-  --background: var(--cod-1000);
+  /* shadcn role 매핑 (light) */
+  --background: #ffffff;
   --foreground: var(--fg-100);
-  --card: rgba(24, 25, 28, 0.42); /* 반투명 — frosted glass 카드 (블러 굴절이 보이게) */
+  --card: rgba(255, 255, 255, 0.92);
   --card-foreground: var(--fg-100);
-  --popover: var(--cod-800);
+  --popover: #ffffff;
   --popover-foreground: var(--fg-100);
-  --primary: var(--fg-100);
-  --primary-foreground: var(--cod-1000);
-  --secondary: var(--cod-700);
+  --primary: #1a1a1a;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f2f2;
   --secondary-foreground: var(--fg-100);
-  --muted: var(--cod-700);
+  --muted: #f2f2f2;
   --muted-foreground: var(--fg-500);
-  --accent: var(--cod-700);
+  --accent: #f2f2f2;
   --accent-foreground: var(--fg-100);
-  --destructive: #d65f5f;
-  --destructive-foreground: var(--fg-100);
+  --destructive: #cc0000;
+  --destructive-foreground: #ffffff;
   --border: var(--line);
   --input: var(--line-strong);
-  --ring: var(--accent-1);
+  --ring: #1a1a1a;
 }
 
 * {
@@ -103,16 +102,11 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  /* 앰비언트 — frosted glass가 굴절할 배경(없으면 블러가 안 보임). 콘텐츠 뒤에 글로우 배치. */
-  background:
-    radial-gradient(46rem 32rem at 16% -4%, rgba(16, 163, 127, 0.2), transparent 58%),
-    radial-gradient(48rem 40rem at 70% 6%, rgba(110, 132, 178, 0.16), transparent 56%),
-    radial-gradient(40rem 36rem at 98% 92%, rgba(16, 163, 127, 0.1), transparent 60%),
-    var(--cod-1000);
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
-  font-family: "Pretendard Variable", Pretendard, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  letter-spacing: -0.02em; /* Codex 톤에 맞춘 정제된 트래킹 */
+  font-family: "DM Sans", "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
+  font-weight: 300; /* NODEPROMPT: 가는체 기본 */
+  letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -122,7 +116,6 @@ kbd,
 pre,
 .mono {
   font-family: "SF Mono", ui-monospace, Menlo, monospace;
-  letter-spacing: 0;
 }
 
 button,
@@ -133,19 +126,41 @@ select {
   letter-spacing: inherit;
 }
 
-/* ── 글래스모피즘 프리미티브 (plan.md §14) ── */
-/* .glass: 자체 반투명 배경 + 블러 (사이드바 / 탑바). */
+/* NODEPROMPT 슬라이더: 작은 검정 원형 thumb */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: var(--line-strong);
+  border-radius: 2px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: none;
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  border: none;
+  cursor: pointer;
+}
+
+/* ── 라이트 frosted 프리미티브 (NODEPROMPT) ── */
 .glass {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(170%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(170%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
 }
-/* .frost: 배경 없음 — 블러+상단 하이라이트+소프트 섀도만. 반투명 bg(--card 등) 위에 얹는다. */
 .frost {
-  -webkit-backdrop-filter: blur(22px) saturate(170%);
-  backdrop-filter: blur(22px) saturate(170%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    var(--shadow-card);
+  background: var(--card);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(120%);
+  box-shadow: var(--shadow-card);
 }

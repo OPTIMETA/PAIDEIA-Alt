@@ -50,7 +50,7 @@ export function OpsMap({
             <p className="text-xs text-muted-foreground">
               작전지도 · {courseName} · {dDay(examDate)}
             </p>
-            <p className="text-xl font-extrabold">지금 이걸 해라</p>
+            <p className="text-xl font-normal">지금 이걸 해라</p>
           </div>
           <button
             type="button"
@@ -70,10 +70,10 @@ export function OpsMap({
           ) : (
             now.map((t, i) => (
               <div key={t.id} className="flex items-center gap-3 rounded-lg border p-3">
-                <span className="mono text-sm font-semibold" style={{ color: "var(--accent-1)" }}>
+                <span className="mono text-sm font-normal" style={{ color: "var(--accent-1)" }}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="flex-1 font-semibold">{t.name}</span>
+                <span className="flex-1 font-normal">{t.name}</span>
                 <span className="text-xs text-muted-foreground">{Math.round(t.examProb * 100)}%</span>
               </div>
             ))
@@ -81,7 +81,7 @@ export function OpsMap({
         </div>
 
         <div className="mb-5 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">버려도 안전</span> · {dropped.length}개 · 절약 약{" "}
+          <span className="font-normal text-foreground">버려도 안전</span> · {dropped.length}개 · 절약 약{" "}
           {savedMin}분
           <p className="mt-1 line-clamp-2">{dropped.map((t) => t.name).join(", ") || "—"}</p>
         </div>

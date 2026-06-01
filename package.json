@@ -13,6 +13,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@fontsource/dm-sans": "^5.2.8",
     "@radix-ui/react-slot": "^1.2.4",
     "ai": "^6.0.193",
     "alt-plugin-sdk": "^0.2.1",
