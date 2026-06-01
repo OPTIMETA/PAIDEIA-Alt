@@ -1,69 +1,71 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, Map as MapIcon, Radar, Scissors } from "lucide-react";
+import { Activity, Plus, Radar, Scissors } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DecisionMap } from "@/viz/DecisionMap";
 import { TriageSession } from "@/flows/TriageSession";
 import { OpsMap } from "@/flows/OpsMap";
+import { NewCourse } from "@/flows/NewCourse";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { hasAltRuntime } from "@/alt/client";
-import {
-  getExamPoints,
-  getTopics,
-  setExamPoints as saveExamPoints,
-  setTopics as saveTopics,
-} from "@/alt/storage";
+import { getExamPoints, getTopics, setTopics as saveTopics } from "@/alt/storage";
+import { createCourse, ensureSeedCourse, listCourses, type CourseRef } from "@/alt/courses";
 import { runtimeSpike } from "@/alt/ai";
 import { budgetCut, totalCostMin } from "@/lib/budget";
 import { dDay, triageFor } from "@/lib/triage";
 import { t } from "@/lib/i18n";
-import {
-  DEMO_COURSE_ID,
-  DEMO_COURSE_NAME,
-  DEMO_EXAM_DATE,
-  demoExamPoints,
-  demoTopics,
-} from "@/lib/demo";
-import type { ExamPoint, Topic } from "@/lib/schemas";
-
-const NAV: { icon: typeof Radar; label: string; active?: boolean }[] = [
-  { icon: Radar, label: "Radar", active: true },
-  { icon: Scissors, label: "오늘의 컷" },
-  { icon: MapIcon, label: "작전지도" },
-];
+import type { ExamPoint, Lecture, Topic } from "@/lib/schemas";
 
 export default function App() {
   const isAlt = useMemo(() => hasAltRuntime(), []);
+  const [courses, setCourses] = useState<CourseRef[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [topics, setTopics] = useState<Topic[]>([]);
   const [examPoints, setExamPoints] = useState<ExamPoint[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sessionOpen, setSessionOpen] = useState(false);
   const [opsOpen, setOpsOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const [budget, setBudget] = useState<number | null>(null);
   const [spike, setSpike] = useState<string | null>(null);
-  const courseId = DEMO_COURSE_ID;
 
+  // 코스 목록 로드 (없으면 데모 시드)
   useEffect(() => {
     let alive = true;
     void (async () => {
-      let loadedTopics = await getTopics(courseId);
-      let loadedPoints = await getExamPoints(courseId);
-      if (loadedTopics.length === 0) {
-        loadedTopics = demoTopics;
-        loadedPoints = demoExamPoints;
-        await saveTopics(courseId, loadedTopics);
-        await saveExamPoints(courseId, loadedPoints);
-      }
-      if (alive) {
-        setTopics(loadedTopics);
-        setExamPoints(loadedPoints);
-      }
+      await ensureSeedCourse();
+      const cs = await listCourses();
+      if (!alive) return;
+      setCourses(cs);
+      setActiveId((cur) => cur ?? cs[0]?.id ?? null);
     })();
     return () => {
       alive = false;
     };
-  }, [courseId]);
+  }, []);
+
+  // 활성 코스 데이터 로드
+  useEffect(() => {
+    if (!activeId) return;
+    let alive = true;
+    void (async () => {
+      const tp = await getTopics(activeId);
+      const ep = await getExamPoints(activeId);
+      if (!alive) return;
+      setTopics(tp);
+      setExamPoints(ep);
+      setSelectedId(null);
+      setBudget(null);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [activeId]);
+
+  const activeMeta = courses.find((c) => c.id === activeId)?.meta ?? null;
+  const courseName = activeMeta?.name ?? "—";
+  const examDate = activeMeta?.examDate ?? null;
 
   const total = useMemo(() => totalCostMin(topics), [topics]);
   const { cut, savedMin } = useMemo(() => budgetCut(topics, budget), [topics, budget]);
@@ -77,12 +79,11 @@ export default function App() {
 
   const persist = useCallback(
     (next: Topic[]) => {
-      void saveTopics(courseId, next);
+      if (activeId) void saveTopics(activeId, next);
     },
-    [courseId],
+    [activeId],
   );
 
-  // 드래그 재조정 = preference override
   const handleChange = useCallback(
     (id: string, patch: { examProb: number; confidence: number | null }) => {
       setTopics((prev) => {
@@ -103,7 +104,6 @@ export default function App() {
     [persist],
   );
 
-  // 오늘의 컷: 한 번의 선택 = 자신감 + triage
   const handleRate = useCallback(
     (id: string, confidence: number) => {
       setTopics((prev) => {
@@ -128,6 +128,17 @@ export default function App() {
     [persist],
   );
 
+  const handleCreateCourse = useCallback(
+    async (name: string, date: string | null, lectures: Lecture[]) => {
+      const id = await createCourse(name, date, lectures);
+      const cs = await listCourses();
+      setCourses(cs);
+      setActiveId(id);
+      setWizardOpen(false);
+    },
+    [],
+  );
+
   const runSpike = useCallback(async () => {
     try {
       const r = await runtimeSpike();
@@ -139,45 +150,50 @@ export default function App() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* 사이드바 */}
-      <aside className="glass flex w-60 shrink-0 flex-col justify-between border-r p-4">
-        <div className="space-y-7">
-          <div className="flex items-center gap-2.5">
-            <div
-              className="grid size-8 place-items-center rounded-lg"
-              style={{ background: "var(--accent-soft)" }}
-            >
-              <Radar className="size-4" style={{ color: "var(--accent-1)" }} />
-            </div>
-            <div className="leading-tight">
-              <p className="text-sm font-extrabold">{t("app.title")}</p>
-              <p className="text-[11px] text-muted-foreground">by Optimeta</p>
-            </div>
+      {/* 사이드바 — 코스 목록 */}
+      <aside className="glass flex w-60 shrink-0 flex-col border-r p-4">
+        <div className="mb-7 flex items-center gap-2.5">
+          <div
+            className="grid size-8 place-items-center rounded-lg"
+            style={{ background: "var(--accent-soft)" }}
+          >
+            <Radar className="size-4" style={{ color: "var(--accent-1)" }} />
           </div>
-
-          <nav className="space-y-0.5">
-            {NAV.map((item) => (
-              <div
-                key={item.label}
-                onClick={() => {
-                  if (item.label === "오늘의 컷") setSessionOpen(true);
-                  if (item.label === "작전지도") setOpsOpen(true);
-                }}
-                className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm"
-                style={
-                  item.active
-                    ? { background: "var(--accent-soft)", color: "var(--accent-1)" }
-                    : { color: "var(--fg-500)" }
-                }
-              >
-                <item.icon className="size-4" />
-                {item.label}
-              </div>
-            ))}
-          </nav>
+          <div className="leading-tight">
+            <p className="text-sm font-extrabold">{t("app.title")}</p>
+            <p className="text-[11px] text-muted-foreground">by Optimeta</p>
+          </div>
         </div>
 
-        <Badge variant={isAlt ? "default" : "secondary"} className="w-fit">
+        <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          코스
+        </p>
+        <nav className="flex-1 space-y-0.5 overflow-auto">
+          {courses.map((c) => (
+            <div
+              key={c.id}
+              onClick={() => setActiveId(c.id)}
+              className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm"
+              style={
+                c.id === activeId
+                  ? { background: "var(--accent-soft)", color: "var(--accent-1)" }
+                  : { color: "var(--fg-500)" }
+              }
+            >
+              <span className="flex-1 truncate">{c.meta.name}</span>
+              <span className="text-[10px] text-muted-foreground">{dDay(c.meta.examDate)}</span>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() => setWizardOpen(true)}
+            className="mt-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Plus className="size-4" /> 새 코스
+          </button>
+        </nav>
+
+        <Badge variant={isAlt ? "default" : "secondary"} className="mt-3 w-fit">
           {isAlt ? t("runtime.connected") : t("runtime.preview")}
         </Badge>
       </aside>
@@ -186,9 +202,9 @@ export default function App() {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="glass flex items-center justify-between gap-4 border-b px-6 py-3">
           <div className="flex items-baseline gap-3">
-            <span className="text-sm text-muted-foreground">{DEMO_COURSE_NAME}</span>
+            <span className="text-sm text-muted-foreground">{courseName}</span>
             <span className="text-3xl font-semibold tabular-nums tracking-tight">
-              {dDay(DEMO_EXAM_DATE)}
+              {dDay(examDate)}
             </span>
             <span className="text-xs text-muted-foreground">
               {topics.length} 토픽 · 골드존 {goldCount}
@@ -196,7 +212,6 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* 예산 슬라이더 (CP-SAT 라이트) */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>예산</span>
               <input
@@ -233,7 +248,6 @@ export default function App() {
           </div>
         </header>
 
-        {/* 큰 결정 맵 (hero) */}
         <div className="flex-1 overflow-hidden p-4">
           <div className="frost relative h-full w-full overflow-hidden rounded-xl border">
             <DecisionMap
@@ -244,7 +258,9 @@ export default function App() {
             />
             {topics.length === 0 ? (
               <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                <p className="text-sm text-muted-foreground">강의를 연결하면 토픽이 채워집니다.</p>
+                <p className="text-sm text-muted-foreground">
+                  강의를 연결하면 토픽이 채워집니다.
+                </p>
               </div>
             ) : null}
 
@@ -270,10 +286,14 @@ export default function App() {
                 topics={topics}
                 cut={cut}
                 savedMin={savedMin}
-                examDate={DEMO_EXAM_DATE}
-                courseName={DEMO_COURSE_NAME}
+                examDate={examDate}
+                courseName={courseName}
                 onClose={() => setOpsOpen(false)}
               />
+            ) : null}
+
+            {wizardOpen ? (
+              <NewCourse onCreate={handleCreateCourse} onClose={() => setWizardOpen(false)} />
             ) : null}
           </div>
         </div>
