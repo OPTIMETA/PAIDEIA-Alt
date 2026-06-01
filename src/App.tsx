@@ -295,9 +295,11 @@ export default function App() {
 
       {/* 디테일 */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="glass flex items-center justify-between gap-4 border-b px-6 py-3">
-          <div className="flex items-baseline gap-3">
-            <span className="text-sm text-muted-foreground">{courseName}</span>
+        <header className="glass flex items-center justify-between gap-4 overflow-x-auto border-b px-6 py-3">
+          <div className="flex shrink-0 items-baseline gap-3 whitespace-nowrap">
+            <span className="max-w-[200px] truncate text-sm text-muted-foreground">
+              {courseName}
+            </span>
             <span className="text-3xl font-semibold tabular-nums tracking-tight">
               {dDay(examDate)}
             </span>
@@ -311,8 +313,8 @@ export default function App() {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-4">
+            <div className="flex shrink-0 items-center gap-2 whitespace-nowrap text-xs text-muted-foreground">
               <span>예산</span>
               <input
                 type="range"
@@ -334,7 +336,7 @@ export default function App() {
               {budget != null ? <span>· 절약 {savedMin}분</span> : null}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <Button
                 variant={gapMode ? "default" : "ghost"}
                 size="sm"
