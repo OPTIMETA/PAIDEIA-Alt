@@ -286,12 +286,12 @@ export default function App() {
             <Radar className="size-4" style={{ color: "var(--accent-1)" }} />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-normal">{t("app.title")}</p>
-            <p className="text-[11px] text-muted-foreground">by Optimeta</p>
+            <p className="text-base font-normal">{t("app.title")}</p>
+            <p className="text-xs text-muted-foreground">by Optimeta</p>
           </div>
         </div>
 
-        <p className="mb-1.5 px-1 text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
+        <p className="mb-1.5 px-1 text-xs font-normal uppercase tracking-wider text-muted-foreground">
           코스
         </p>
         <nav className="flex-1 space-y-0.5 overflow-auto">
@@ -308,9 +308,9 @@ export default function App() {
             >
               <span className="flex-1 truncate">{c.meta.name}</span>
               {c.id === DEMO_COURSE_ID ? (
-                <span className="rounded border px-1 text-[9px] text-muted-foreground">예시</span>
+                <span className="rounded border px-1 text-xs text-muted-foreground">예시</span>
               ) : null}
-              <span className="text-[10px] text-muted-foreground">{dDay(c.meta.examDate)}</span>
+              <span className="text-xs text-muted-foreground">{dDay(c.meta.examDate)}</span>
             </div>
           ))}
           <button
@@ -344,7 +344,7 @@ export default function App() {
               <span className="hidden max-w-[160px] truncate text-sm text-muted-foreground lg:inline">
                 {courseName}
               </span>
-              <span className="text-2xl font-normal tabular-nums tracking-tight sm:text-3xl">
+              <span className="text-2xl font-normal tabular-nums tracking-tight">
                 {dDay(examDate)}
               </span>
               <span className="hidden text-xs text-muted-foreground lg:inline">

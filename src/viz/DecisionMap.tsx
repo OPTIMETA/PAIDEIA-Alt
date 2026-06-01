@@ -312,7 +312,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   });
   for (const n of ordered) {
     const forced = n.id === hovered || hoverNeighbors.has(n.id);
-    const size = n.id === hovered ? 13 : 11;
+    const size = n.id === hovered ? 14 : 12;
     const text = forced ? n.name : truncate(n.name, 16);
     const boxW = labelWidth(text, size);
     const boxH = size * 1.1;
@@ -354,7 +354,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   return (
     <div className="flex h-full w-full flex-col">
       {/* 범례 — 맵 위 별도 줄(겹침 방지) */}
-      <div className="shrink-0 px-3 pb-1 pt-1.5 text-[10px] leading-tight text-muted-foreground">
+      <div className="shrink-0 px-3 pb-1 pt-1.5 text-xs leading-tight text-muted-foreground">
         <b className="text-foreground">X →</b> 시험확률(교수 발화·반복) ·{" "}
         <b className="text-foreground">Y ↑</b> 자신감 ·{" "}
         <span style={{ color: "var(--accent-1)" }}>●</span> 골드존 = 지금 할 것 · 🎙 교수 강조
@@ -439,7 +439,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
                 strokeWidth={1}
               />
               {signalCounts && (signalCounts.get(n.id) ?? 0) > 0 ? (
-                <text x={n.r * 0.78} y={-n.r * 0.78 + 3} fontSize={9} textAnchor="middle">
+                <text x={n.r * 0.82} y={-n.r * 0.82 + 3} fontSize={12} textAnchor="middle">
                   🎙
                 </text>
               ) : null}
