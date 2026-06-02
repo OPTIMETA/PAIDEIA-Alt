@@ -30,3 +30,8 @@ pnpm-debug.log*
 
 # stray Playwright snapshot dumps
 snap*.md
+
+# 구현 과정 / 개발·기획 지침 (실행 무관 — 레포에서 제외, 로컬에는 유지)
+/docs/plan.md
+/AGENTS.md
+/CLAUDE.md

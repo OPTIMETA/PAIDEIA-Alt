@@ -28,8 +28,6 @@
   &nbsp;·&nbsp;
   <a href="https://github.com/TaewoooPark/PAIDEIA-codex"><strong>PAIDEIA-codex</strong> — Codex CLI 에디션</a>
   &nbsp;·&nbsp;
-  <a href="./docs/plan.md">기획서 (master plan)</a>
-  &nbsp;·&nbsp;
   <a href="https://taewoopark.com">taewoopark.com</a>
 </p>
 
@@ -160,56 +158,6 @@ Exam Radar는 강의 녹음 전사에서 그 **발화 신호**를 뽑아 두 축
 
 ---
 
-## 설치 & 개발
-
-> Alt 플러그인은 **샌드박스 정적 웹 번들**입니다. 최종 산출물은 `dist/`이고, Alt가 `dist/manifest.json`을 읽어 `index.html`을 `alt-plugin://` 프로토콜로 띄웁니다.
-
-```bash
-pnpm install
-pnpm dev        # 로컬 브라우저 프리뷰 (window.alt 없음 → 일부 호출은 프리뷰 목으로 대체)
-pnpm build      # dist/ 생성 (유효한 dist/manifest.json 포함)
-pnpm typecheck
-pnpm check      # 포맷·린트
-```
-
-**Alt에 설치**: `Settings → Plugins → Create your own plugin → Install from local folder` → 빌드된 `dist/` 폴더 선택.
-
-로컬 프리뷰는 UI·상호작용 확인용입니다. `alt.ai.*`, `alt.notes.*`, `alt.storage.*` 같은 호스트 호출은 Alt 런타임에서만 실제로 동작합니다.
-
----
-
-## 스택 & 아키텍처
-
-- **샌드박스**: 격리된 `WebContentsView`, 엄격한 CSP. `Node`/`fs`/임의 HTTP 없음. 호스트와의 유일한 통로는 `window.alt` 브릿지(타입 안전 프록시 = [`alt-plugin-sdk`](https://www.npmjs.com/package/alt-plugin-sdk)).
-- **추출 파이프라인**: `alt.ai`(OpenAI 호환) + Vercel **AI SDK `generateObject`** 로 전사 → **Zod 스키마** 구조화 출력. 토픽·시험확률·교수 발화 인용을 한 번에 뽑습니다.
-- **저장**: `alt.storage` 위 **append-only** `course:*` 레포(코스 누적 = moat의 라이트 시연). 키는 `^[a-zA-Z0-9._:-]+$`.
-- **결정 맵**: `d3-force`(`forceX`/`forceY`로 데이터 좌표 앵커 + `forceCollide`) + React/SVG 하이브리드. 시뮬레이션은 라이브 애니메이션(크기·데이터 변경 시 부드럽게 글라이드).
-- **권한 (최소 선언)**: `storage`, `notes:read`, `notes:select`, `ai:chat`, `events:subscribe`, `settings:read`.
-
-```
-src/
-├── App.tsx              # 멀티코스 셸 · 헤더 · 2D 맵 호스팅
-├── viz/DecisionMap.tsx  # d3-force 4분면 결정 맵 (드래그=결정, 호버=연결, 클릭=증거)
-├── flows/               # 오늘의 컷(TriageSession) · 학습 로드맵(OpsMap) · 새 코스 · Welcome · Help
-├── pipeline/            # 전사 → 토픽·시험점 수집(collect)
-├── alt/                 # storage · courses · ai · client (SDK 경계)
-└── lib/                 # schemas(zod) · i18n · demo
-```
-
----
-
-## 디자인
-
-NODEPROMPT 라이트 에디토리얼 형식: 캔버스 `#f2f2f2` · 띄운 패널 근사-흰 `#fafafa` · 헤어라인 보더 · **DM Sans 300** · 단일 흑 accent(`#1a1a1a`) · 위험 `#c00`. **순수 흑/백(#000/#fff)은 쓰지 않습니다.**
-
-- **타입 스케일**: 5단계(12 · 14 · 16 · 20 · 24)로 통일, **자간 −5%** 전역.
-- **모션**: 호버 포커싱 · 노드 이동 · 모달 등장 모두 부드러운 ease-out(200–240ms), `prefers-reduced-motion` 대응.
-- **밀도**: 데스크톱 앱 내부에 사는 UI. 마케팅 페이지가 아니라 *앱*처럼.
-
-기본 Alt 창(레티나, CSS 폭 ≈ 1000px)에 맞춰 반응형 최적화돼 있습니다.
-
----
-
 ## 포지셔닝 — 쐐기, 제품이 아니다
 
 ```
@@ -218,14 +166,6 @@ NODEPROMPT 라이트 에디토리얼 형식: 캔버스 `#f2f2f2` · 띄운 패�
 ```
 
 깊이(드릴·채점·feedback 루프·12개 append-only 데이터 자산)는 **제품의 업셀**입니다. 이 플러그인은 Optimeta의 더 큰 thesis — *“노력을 마감까지 최적 배분한다”* — 를 시험이라는 가장 날카로운 사례로 심는 **첫 깃발**입니다.
-
-> 자세한 전략·기능 매트릭스·로드맵은 [`docs/plan.md`](./docs/plan.md)(마스터 기획서)를 보세요.
-
----
-
-## 상태 & 로드맵
-
-**Phase 0 — 스캐폴드 + 코어 결정 맵.** 구현됨: 멀티코스, 2D 결정 맵(드래그·호버·증거), 오늘의 컷, 학습 로드맵, 예산, 갭 모드, 수집 파이프라인, 사용법 도움말, 디자인 시스템. 로드맵·런칭 타이밍은 기획서 §10·§13 참조. (전환 CTA/waitlist는 URL 확정 시 연결 — 현재 보류.)
 
 ---
 
