@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Eye, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
-import logoUrl from "@/assets/optimeta-logo.svg";
+import logoUrl from "@/assets/optimeta-logo.png";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -280,7 +280,7 @@ export default function App() {
       {sidebarOpen ? (
         <aside className="glass flex w-56 shrink-0 flex-col border-r p-4 xl:w-60">
         <div className="mb-7 flex items-center gap-2.5">
-          <img src={logoUrl} alt="OPTIMETA" className="size-8 shrink-0" />
+          <img src={logoUrl} alt="OPTIMETA" className="size-8 shrink-0 rounded-lg" />
           <div className="leading-tight">
             <p className="text-base font-normal">{t("app.title")}</p>
             <p className="text-xs text-muted-foreground">by OPTIMETA</p>
