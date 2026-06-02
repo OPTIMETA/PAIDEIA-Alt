@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Eye, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
+import { Eye, HelpCircle, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
 import logoUrl from "@/assets/optimeta-logo.png";
 
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { TriageSession } from "@/flows/TriageSession";
 import { OpsMap } from "@/flows/OpsMap";
 import { NewCourse } from "@/flows/NewCourse";
 import { Welcome } from "@/flows/Welcome";
+import { Help } from "@/flows/Help";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { alt, hasAltRuntime } from "@/alt/client";
 import {
@@ -44,6 +45,7 @@ export default function App() {
   const [growth, setGrowth] = useState<string | null>(null);
   const [collecting, setCollecting] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // 코스 목록 로드 (없으면 데모 시드)
@@ -379,6 +381,15 @@ export default function App() {
 
             <div className="flex shrink-0 items-center gap-1.5">
               <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setHelpOpen(true)}
+                title="사용법"
+                aria-label="사용법 도움말"
+              >
+                <HelpCircle className="size-4" />
+              </Button>
+              <Button
                 variant={gapMode ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setGapMode((v) => !v)}
@@ -500,6 +511,8 @@ export default function App() {
           onClose={dismissWelcome}
         />
       ) : null}
+
+      {helpOpen ? <Help onClose={() => setHelpOpen(false)} /> : null}
     </div>
   );
 }
