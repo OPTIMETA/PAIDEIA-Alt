@@ -1,18 +1,13 @@
 // 1회성 환영 온보딩 (plan.md §3.5① 첫인상) — 무엇을 하는 도구인지 3줄로.
-import { Radar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoUrl from "@/assets/optimeta-logo.svg";
 
 export function Welcome({ onNewCourse, onClose }: { onNewCourse: () => void; onClose: () => void }) {
   return (
     <div className="absolute inset-0 z-50 grid place-items-center p-4">
       <div className="glass anim-overlay absolute inset-0" />
       <div className="frost anim-panel relative max-h-[92%] w-[min(94%,460px)] overflow-auto rounded-2xl border p-7 text-center">
-        <div
-          className="mx-auto mb-4 grid size-11 place-items-center rounded-xl"
-          style={{ background: "var(--accent-soft)" }}
-        >
-          <Radar className="size-5" />
-        </div>
+        <img src={logoUrl} alt="OPTIMETA" className="mx-auto mb-4 size-12" />
         <p className="text-xl">Exam Radar</p>
         <p className="mt-1 text-sm text-muted-foreground">공부 적게, 점수 더</p>
 

@@ -1,0 +1,82 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - img [ref=e7]
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Exam Radar
+        - paragraph [ref=e16]: by Optimeta
+    - paragraph [ref=e17]: 코스
+    - navigation [ref=e18]:
+      - generic [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]: 선형대수
+        - generic [ref=e21]: 예시
+        - generic [ref=e22]: D-7
+      - button "새 코스" [ref=e23]:
+        - img [ref=e24]
+        - text: 새 코스
+    - generic [ref=e25]: 로컬 브라우저 프리뷰
+  - generic [ref=e26]:
+    - banner [ref=e27]:
+      - generic [ref=e28]:
+        - button "사이드바 토글" [ref=e29]:
+          - img [ref=e30]
+        - generic [ref=e33]: D-7
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - slider "시간 예산" [ref=e36]: "750"
+          - generic [ref=e37]: 전체
+        - generic [ref=e38]:
+          - button "가르친 것 vs 시험낼 것 (시험신호 없는 토픽 흐리게)" [ref=e39]:
+            - img
+          - button [ref=e40]:
+            - img
+          - button "작전지도" [ref=e41]:
+            - img
+            - generic [ref=e42]: 작전지도
+          - button "오늘의 컷" [ref=e43]:
+            - img
+            - generic [ref=e44]: 오늘의 컷
+    - generic [ref=e47]:
+      - generic [ref=e48]: X → 시험확률(교수 발화·반복) · Y ↑ 자신감 · ● 골드존 = 지금 할 것 · 🎙 교수 강조
+      - img "2D 결정 맵" [ref=e50]:
+        - generic [ref=e51]:
+          - generic [ref=e52]: 시험확률 →
+          - generic [ref=e53]: 유지만
+          - generic [ref=e54]: 이미 안전
+          - generic [ref=e55]: 버려도 안전
+          - generic [ref=e56]: 🔥 지금 (골드존)
+          - generic [ref=e57]: 미평가
+        - generic [ref=e94]: 🎙
+        - generic [ref=e97]: 🎙
+        - generic [ref=e100]: 🎙
+        - generic [ref=e103]: 🎙
+        - generic [ref=e106]: 🎙
+        - generic [ref=e113]: 🎙
+        - generic [ref=e122]: 🎙
+        - generic [ref=e127]: 🎙
+        - generic: 대각화
+        - generic: 고유값·고유벡터
+        - generic: 그람-슈미트
+        - generic: 정사영
+        - generic: 특이값분해(SVD)
+        - generic: 선형변환
+        - generic: 기저·차원
+        - generic: 행렬식
+        - generic: 일차독립
+        - generic: 내적공간
+        - generic: 여인수 전개
+        - generic: 크라메르 공식
+        - generic: 선형연립방정식
+        - generic: 직교대각화
+  - generic [ref=e60]:
+    - img [ref=e62]
+    - paragraph [ref=e69]: Exam Radar
+    - paragraph [ref=e70]: 공부 적게, 점수 더
+    - generic [ref=e71]:
+      - paragraph [ref=e72]: ① 강의 녹음을 연결하면 — 교수가 강조한 부분에서 시험에 나올 토픽을 뽑습니다.
+      - paragraph [ref=e73]: ② 오늘의 컷으로 아는 것/모르는 것을 빠르게 분류하면,
+      - paragraph [ref=e74]: ③ 지금 뭘 공부하고 뭘 버릴지를 지도로 보여줍니다.
+    - generic [ref=e75]:
+      - button "예시 둘러보기" [ref=e76]
+      - button "새 코스 만들기" [ref=e77]
+    - paragraph [ref=e78]: “선형대수”는 둘러보기용 예시입니다.

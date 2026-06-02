@@ -113,7 +113,7 @@ export async function setExamPoints(id: string, points: ExamPoint[]): Promise<vo
   await kvSet(K.examPoints(id), toStorage(points));
 }
 
-// ── 작전지도 세션 ──
+// ── 학습 로드맵 세션 ──
 export async function saveSession(id: string, session: StudySession): Promise<void> {
   await kvSet(K.session(id, session.ts), toStorage(session));
 }

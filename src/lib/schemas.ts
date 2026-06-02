@@ -62,7 +62,7 @@ export const topicSchema = z.object({
 });
 export type Topic = z.infer<typeof topicSchema>;
 
-/** 작전지도 = triage 세션 출력 (plan.md §3.5) */
+/** 학습 로드맵 = triage 세션 출력 (plan.md §3.5) */
 export const studySessionSchema = z.object({
   ts: z.string(),
   budgetMin: z.number().nullable(),

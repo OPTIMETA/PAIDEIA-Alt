@@ -1,4 +1,4 @@
-// 작전지도 (plan.md §3.5 출력) — triage 결과 1페이지: 지금 할 것(골드존) · 버린 것 · 절약 시간.
+// 학습 로드맵 (plan.md §3.5 출력) — triage 결과 1페이지: 지금 할 것(골드존) · 버린 것 · 절약 시간.
 // 복사(공유) + PAIDEIA 전환 CTA.
 import { Copy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export function OpsMap({
   const dropped = topics.filter((t) => cut.has(t.id) || t.triage === "trap");
 
   const summary = [
-    `[${courseName} · ${dDay(examDate)}] Exam Radar 작전지도`,
+    `[${courseName} · ${dDay(examDate)}] Exam Radar 학습 로드맵`,
     ``,
     `지금 할 것 (골드존):`,
     ...now.map((t) => `· ${t.name} — 시험확률 ${Math.round(t.examProb * 100)}%`),
@@ -36,7 +36,7 @@ export function OpsMap({
     `버려도 안전: ${dropped.map((t) => t.name).join(", ") || "—"}`,
     `절약: 약 ${savedMin}분`,
     ``,
-    `— Optimeta PAIDEIA`,
+    `— OPTIMETA PAIDEIA`,
   ].join("\n");
 
   const copy = () => {
@@ -50,7 +50,7 @@ export function OpsMap({
         <div className="mb-4 flex items-start justify-between">
           <div>
             <p className="text-xs text-muted-foreground">
-              작전지도 · {courseName} · {dDay(examDate)}
+              학습 로드맵 · {courseName} · {dDay(examDate)}
             </p>
             <p className="text-xl font-normal">지금 이걸 해라</p>
           </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Eye, Map as MapIcon, PanelLeft, Plus, Radar, Scissors, Sparkles } from "lucide-react";
+import { Eye, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
+import logoUrl from "@/assets/optimeta-logo.svg";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -279,15 +280,10 @@ export default function App() {
       {sidebarOpen ? (
         <aside className="glass flex w-56 shrink-0 flex-col border-r p-4 xl:w-60">
         <div className="mb-7 flex items-center gap-2.5">
-          <div
-            className="grid size-8 place-items-center rounded-lg"
-            style={{ background: "var(--accent-soft)" }}
-          >
-            <Radar className="size-4" style={{ color: "var(--accent-1)" }} />
-          </div>
+          <img src={logoUrl} alt="OPTIMETA" className="size-8 shrink-0" />
           <div className="leading-tight">
             <p className="text-base font-normal">{t("app.title")}</p>
-            <p className="text-xs text-muted-foreground">by Optimeta</p>
+            <p className="text-xs text-muted-foreground">by OPTIMETA</p>
           </div>
         </div>
 
@@ -406,7 +402,7 @@ export default function App() {
               </Button>
               <Button variant="secondary" size="sm" onClick={() => setOpsOpen(true)}>
                 <MapIcon className="size-4" />
-                <span className="hidden md:inline">작전지도</span>
+                <span className="hidden md:inline">학습 로드맵</span>
               </Button>
               <Button
                 size="sm"
