@@ -117,8 +117,10 @@ export function OpsMap({
             지도 보기
           </Button>
         </div>
-        <p className="mt-3 text-center text-xs text-muted-foreground">
-          더 깊은 반복 학습과 채점은 PAIDEIA Study OS에서 이어집니다
+        <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+          복사한 내용을 <b className="text-foreground">PAIDEIA</b>에 붙여넣으면 더 깊은 학습으로
+          이어집니다 — Claude Code <span className="mono text-foreground">/paideia:alt</span>, Codex{" "}
+          <span className="mono text-foreground">$paideia-alt</span> 바로 뒤에.
         </p>
       </div>
     </div>
