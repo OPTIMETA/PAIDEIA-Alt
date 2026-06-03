@@ -47,8 +47,8 @@ function pads(w: number, h: number) {
   return {
     PAD_X: Math.round(Math.max(48, Math.min(110, w * 0.085))),
     PAD_TOP: Math.round(Math.max(36, Math.min(58, h * 0.09))),
-    BAND_H: Math.round(Math.max(44, Math.min(76, h * 0.11))), // 하단 '미평가' 띠
-    PAD_BOTTOM: Math.round(Math.max(26, Math.min(46, h * 0.07))),
+    BAND_H: 0, // '미평가' 띠 제거(#5) — 미평가 노드는 오른쪽 트레이로. 전 높이를 자신감 축에 사용.
+    PAD_BOTTOM: Math.round(Math.max(38, Math.min(58, h * 0.085))),
   };
 }
 
@@ -102,7 +102,7 @@ function invert(x: number, y: number, w: number, h: number) {
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
   const examProb = Math.min(1, Math.max(0, (x - PAD_X) / (w - 2 * PAD_X)));
-  if (y > ratedBottom + 6) return { examProb, confidence: null, cf: null };
+  // 미평가 띠가 없어졌으므로 맵 어디에 놓든 자신감 0~3으로 분류된다(맨 아래 = 0).
   const cf = Math.min(3, Math.max(0, ((ratedBottom - y) / (ratedBottom - ratedTop)) * 3));
   return { examProb, confidence: Math.round(cf), cf };
 }
@@ -190,7 +190,10 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   useEffect(() => {
     const { w, h } = size;
     const prev = new Map(nodesRef.current.map((n) => [n.id, n]));
-    const nodes: SimNode[] = topics.map((t) => {
+    // 맵에는 분류된(평가된) 노드만. 미평가(confidence===null)는 오른쪽 트레이가 담당(#5).
+    const nodes: SimNode[] = topics
+      .filter((t) => t.confidence !== null)
+      .map((t) => {
       const { tx, ty } = layout(t.examProb, t.confidence, t.posOverride, w, h);
       const old = prev.get(t.id);
       return {
@@ -370,7 +373,26 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
         <b className="text-foreground">Y ↑</b> 자신감 ·{" "}
         <span style={{ color: "var(--accent-1)" }}>●</span> 골드존 = 지금 할 것 · 🎙 교수 강조
       </div>
-      <div ref={wrapRef} className="relative min-h-0 flex-1">
+      <div
+        ref={wrapRef}
+        className="relative min-h-0 flex-1"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          // 트레이(#5)에서 끌어온 미평가 노드를 드롭 → 드롭 높이가 자신감(Y)을 정함.
+          // examProb(X=신호)는 그대로 유지하고 자신감만 부여해 분류 완료.
+          e.preventDefault();
+          const id = e.dataTransfer.getData("text/plain");
+          const svg = svgRef.current;
+          if (!id || !svg) return;
+          const t = topics.find((x) => x.id === id);
+          if (!t) return;
+          const rect = svg.getBoundingClientRect();
+          const dy = ((e.clientY - rect.top) / rect.height) * h;
+          const dx = PAD_X + t.examProb * (w - 2 * PAD_X);
+          const inv = invert(dx, dy, w, h);
+          onChange?.(id, { examProb: t.examProb, confidence: inv.confidence, posOverride: null });
+        }}
+      >
         <svg
           ref={svgRef}
           width="100%"
@@ -382,17 +404,8 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
           aria-label="2D 결정 맵"
         >
         {/* 사분면 가이드 */}
-        <line x1={cx} y1={PAD_TOP - 14} x2={cx} y2={ratedBottom + 6} stroke="var(--line)" strokeWidth={1} />
+        <line x1={cx} y1={PAD_TOP - 14} x2={cx} y2={ratedBottom} stroke="var(--line)" strokeWidth={1} />
         <line x1={PAD_X - 14} y1={cy} x2={w - PAD_X + 14} y2={cy} stroke="var(--line)" strokeWidth={1} />
-        <line
-          x1={PAD_X - 14}
-          y1={ratedBottom + 6}
-          x2={w - PAD_X + 14}
-          y2={ratedBottom + 6}
-          stroke="var(--line)"
-          strokeDasharray="4 5"
-          strokeWidth={1}
-        />
 
         {/* 모서리 라벨 (faint, 노드 영역 밖) */}
         <g fontSize={12} fill="var(--fg-700)">
@@ -403,7 +416,6 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
           <text x={w - PAD_X + 10} y={ratedBottom - 6} textAnchor="end" fill="var(--accent-1)">
             🔥 지금 (골드존)
           </text>
-          <text x={PAD_X - 10} y={h - 16}>미평가</text>
         </g>
 
         {/* backbone 아크 (faint) */}

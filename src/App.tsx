@@ -13,6 +13,7 @@ import { Welcome } from "@/flows/Welcome";
 import { Help } from "@/flows/Help";
 import { CollectProgress } from "@/flows/CollectProgress";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
+import { UnratedTray } from "@/components/UnratedTray";
 import { alt, hasAltRuntime } from "@/alt/client";
 import {
   getExamPoints,
@@ -117,6 +118,11 @@ export default function App() {
   const dimmedIds = gapMode ? noSignalIds : cut;
   const allUnrated = topics.length > 0 && topics.every((tp) => tp.confidence === null);
   const collecting = collectProgress !== null;
+  // #5: 미평가(분류 전, 버리지 않은) 토픽 → 오른쪽 트레이. 맵엔 평가된 것만.
+  const unrated = useMemo(
+    () => topics.filter((tp) => tp.confidence === null && tp.triage !== "drop"),
+    [topics],
+  );
 
   // 토픽별 교수 발화 신호(증거) — 가중치 내림차순
   const pointsByTopic = useMemo(() => {
@@ -465,8 +471,8 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-hidden p-4">
-          <div className="frost relative h-full w-full overflow-hidden rounded-xl border">
+        <div className="flex flex-1 gap-3 overflow-hidden p-4">
+          <div className="frost relative min-w-0 flex-1 overflow-hidden rounded-xl border">
             <DecisionMap
               topics={topics}
               onChange={handleChange}
@@ -477,15 +483,15 @@ export default function App() {
             {topics.length === 0 ? (
               <div className="pointer-events-none absolute inset-0 grid place-items-center px-8 text-center">
                 <p className="max-w-sm text-sm text-muted-foreground">
-                  이 코스에 <b className="text-foreground">강의 녹음</b>을 연결하고{" "}
-                  <b className="text-foreground">수집</b>하면, 교수가 강조한 시험 핫존이 채워집니다.
+                  <b className="text-foreground">강의 추가</b>로 강의 녹음을 연결하면, 교수가 강조한
+                  시험 핫존이 노드로 채워집니다.
                 </p>
               </div>
             ) : allUnrated ? (
               <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
                 <div className="frost rounded-full border px-4 py-1.5 text-xs text-muted-foreground">
-                  {topics.length}개 토픽 수집됨 · <b className="text-foreground">오늘의 컷</b>으로
-                  분류하면 골드존이 나타납니다 →
+                  오른쪽 <b className="text-foreground">미평가</b>에서 노드를 맵으로 끌어다 놓아
+                  분류하세요 · 또는 <b className="text-foreground">오늘의 컷</b>
                 </div>
               </div>
             ) : null}
@@ -532,6 +538,8 @@ export default function App() {
               />
             ) : null}
           </div>
+
+          <UnratedTray topics={unrated} />
         </div>
 
         {status ? (
