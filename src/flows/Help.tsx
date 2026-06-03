@@ -58,7 +58,7 @@ export function Help({ onClose }: { onClose: () => void }) {
 
         <p className="mb-5 text-sm text-muted-foreground">
           강의 녹음에서 <b className="text-foreground">시험에 나올 토픽</b>을 뽑고,{" "}
-          <b className="text-foreground">지금 뭘 공부하고 뭘 버릴지</b>를 시험일까지 결정합니다. 퀴즈가 아니라 결정.
+          <b className="text-foreground">지금 무엇을 공부하고 무엇을 버릴지</b>를 시험일까지 정해 줍니다. 퀴즈가 아니라 결정입니다.
         </p>
 
         {/* 3단계 흐름 */}
@@ -74,9 +74,9 @@ export function Help({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        {/* 맵 읽는 법 */}
-        <p className="text-sm">맵 읽는 법</p>
-        <p className="mb-2 text-xs text-muted-foreground">X → 시험확률(교수 발화·반복) · Y ↑ 자신감</p>
+        {/* 지도 읽는 법 */}
+        <p className="text-sm">지도 읽는 법</p>
+        <p className="mb-2 text-xs text-muted-foreground">가로는 시험 확률(교수가 강조하고 반복한 정도), 세로는 자신감입니다</p>
         <div className="mb-6 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
           {ZONES.map((z) => (
             <div key={z.k} className="rounded-lg border p-2.5">
@@ -89,7 +89,7 @@ export function Help({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* 인터랙션 */}
-        <p className="mb-2 text-sm">맵에서 할 수 있는 것</p>
+        <p className="mb-2 text-sm">지도에서 할 수 있는 일</p>
         <div className="mb-6 space-y-1.5">
           {TIPS.map(([k, v]) => (
             <div key={k} className="flex gap-3 text-xs">
@@ -100,7 +100,7 @@ export function Help({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">공부 적게, 점수 더.</p>
+          <p className="text-xs text-muted-foreground">공부는 적게, 점수는 높게.</p>
           <Button size="sm" onClick={onClose}>
             이해했어요
           </Button>
