@@ -52,6 +52,19 @@ function pads(w: number, h: number) {
   };
 }
 
+// 가로축 정규화 — 전사 기반이라 examProb가 다 높게 몰리는(오른쪽 쏠림) 문제 보정.
+// 코스 안 토픽들의 상대 위치로 펼쳐, 절대값이 비슷해도 축 폭을 충분히 쓰게 한다.
+const X_INSET = 0.07; // 좌우 끝 여백(가장자리 박힘 방지)
+function probRange(topics: { examProb: number }[]): { lo: number; hi: number } {
+  if (topics.length === 0) return { lo: 0, hi: 1 };
+  const ps = topics.map((t) => t.examProb);
+  return { lo: Math.min(...ps), hi: Math.max(...ps) };
+}
+function normFrac(examProb: number, lo: number, hi: number): number {
+  const f = hi > lo ? (examProb - lo) / (hi - lo) : 0.5;
+  return X_INSET + (1 - 2 * X_INSET) * Math.min(1, Math.max(0, f));
+}
+
 function isHot(examProb: number, confidence: number | null): boolean {
   return examProb >= 0.6 && confidence !== null && confidence <= 1;
 }
@@ -79,11 +92,13 @@ function layout(
   posOverride: { x: number; y: number } | null,
   w: number,
   h: number,
+  lo: number,
+  hi: number,
 ) {
   const { PAD_X, PAD_TOP, BAND_H, PAD_BOTTOM } = pads(w, h);
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
-  const tx = PAD_X + examProb * (w - 2 * PAD_X);
+  const tx = PAD_X + normFrac(examProb, lo, hi) * (w - 2 * PAD_X);
   let ty: number;
   if (posOverride) {
     // 드래그로 둔 자리 그대로(연속). 세로 스냅 없음.
@@ -97,11 +112,14 @@ function layout(
   return { tx, ty };
 }
 
-function invert(x: number, y: number, w: number, h: number) {
+function invert(x: number, y: number, w: number, h: number, lo: number, hi: number) {
   const { PAD_X, PAD_TOP, BAND_H, PAD_BOTTOM } = pads(w, h);
   const ratedTop = PAD_TOP;
   const ratedBottom = h - BAND_H - PAD_BOTTOM;
-  const examProb = Math.min(1, Math.max(0, (x - PAD_X) / (w - 2 * PAD_X)));
+  // 정규화된 가로 위치를 다시 examProb로 환산(layout의 역).
+  const frac = (x - PAD_X) / (w - 2 * PAD_X);
+  const unf = Math.min(1, Math.max(0, (frac - X_INSET) / (1 - 2 * X_INSET)));
+  const examProb = Math.min(1, Math.max(0, hi > lo ? lo + unf * (hi - lo) : (lo + hi) / 2));
   // 미평가 띠가 없어졌으므로 맵 어디에 놓든 자신감 0~3으로 분류된다(맨 아래 = 0).
   const cf = Math.min(3, Math.max(0, ((ratedBottom - y) / (ratedBottom - ratedTop)) * 3));
   return { examProb, confidence: Math.round(cf), cf };
@@ -190,11 +208,13 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
   useEffect(() => {
     const { w, h } = size;
     const prev = new Map(nodesRef.current.map((n) => [n.id, n]));
+    // 가로 정규화 범위는 코스 전체(트레이 포함) 기준 — 트레이↔맵 이동 시 위치 일관.
+    const { lo, hi } = probRange(topics);
     // 맵에는 분류된(평가된) 노드만. 미평가(confidence===null)는 오른쪽 트레이가 담당(#5).
     const nodes: SimNode[] = topics
       .filter((t) => t.confidence !== null)
       .map((t) => {
-      const { tx, ty } = layout(t.examProb, t.confidence, t.posOverride, w, h);
+      const { tx, ty } = layout(t.examProb, t.confidence, t.posOverride, w, h, lo, hi);
       const old = prev.get(t.id);
       return {
         id: t.id,
@@ -288,13 +308,14 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
         sim.alphaTarget(0);
       }
       const { w, h } = dimsRef.current;
-      const r = invert(n.fx ?? n.x, n.fy ?? n.y, w, h);
+      const { lo, hi } = probRange(topics);
+      const r = invert(n.fx ?? n.x, n.fy ?? n.y, w, h, lo, hi);
       n.fx = null;
       n.fy = null;
       onChange?.(id, {
         examProb: r.examProb,
         confidence: r.confidence,
-        posOverride: r.cf == null ? null : { x: r.examProb, y: r.cf },
+        posOverride: { x: r.examProb, y: r.cf },
       });
     } else {
       n.fx = null;
@@ -387,8 +408,8 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
           if (!t) return;
           const rect = svg.getBoundingClientRect();
           const dy = ((e.clientY - rect.top) / rect.height) * h;
-          const dx = PAD_X + t.examProb * (w - 2 * PAD_X);
-          const inv = invert(dx, dy, w, h);
+          const { lo, hi } = probRange(topics);
+          const inv = invert(0, dy, w, h, lo, hi);
           onChange?.(id, { examProb: t.examProb, confidence: inv.confidence, posOverride: null });
         }}
       >
