@@ -111,12 +111,12 @@ export function NewCourse({
                 </div>
               ) : (
                 <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-                  노트를 불러오는 중이거나 없습니다. 나중에 연결할 수 있습니다.
+                  노트를 불러오는 중이거나 아직 없습니다. 나중에 연결할 수 있습니다.
                 </p>
               )
             ) : (
               <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-                Alt 런타임에서 강의 녹음 노트를 연결할 수 있습니다.
+                Alt 안에서 강의 녹음을 연결할 수 있습니다.
               </p>
             )}
           </div>

@@ -82,7 +82,7 @@ export function AddLectures({
 
         {!hasAltRuntime() ? (
           <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-            Alt 런타임에서만 강의 녹음 노트를 연결할 수 있습니다.
+            Alt 안에서만 강의 녹음을 연결할 수 있습니다.
           </p>
         ) : loading ? (
           <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
@@ -90,7 +90,7 @@ export function AddLectures({
           </p>
         ) : available.length === 0 ? (
           <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-            추가할 새 강의가 없습니다 — 모든 노트가 이미 연결돼 있습니다.
+            추가할 새 강의가 없습니다. 모든 노트가 이미 연결돼 있습니다.
           </p>
         ) : (
           <div className="max-h-72 space-y-1 overflow-auto rounded-lg border p-2">
@@ -116,7 +116,7 @@ export function AddLectures({
             취소
           </Button>
           <Button size="sm" onClick={submit} disabled={selected.size === 0}>
-            추가 + 수집
+            추가하고 수집
           </Button>
         </div>
       </div>

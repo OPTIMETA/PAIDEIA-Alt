@@ -9,12 +9,12 @@ export function Welcome({ onNewCourse, onClose }: { onNewCourse: () => void; onC
       <div className="frost anim-panel relative max-h-[92%] w-[min(94%,460px)] overflow-auto rounded-2xl border p-7 text-center">
         <img src={logoUrl} alt="OPTIMETA" className="mx-auto mb-4 size-12 rounded-xl" />
         <p className="text-xl">Exam Radar</p>
-        <p className="mt-1 text-sm text-muted-foreground">공부 적게, 점수 더</p>
+        <p className="mt-1 text-sm text-muted-foreground">공부는 적게, 점수는 높게</p>
 
         <div className="mt-5 space-y-2 text-left text-sm text-muted-foreground">
-          <p>① 강의 녹음을 연결하면 — 교수가 강조한 부분에서 <b className="text-foreground">시험에 나올 토픽</b>을 뽑습니다.</p>
-          <p>② <b className="text-foreground">오늘의 컷</b>으로 아는 것/모르는 것을 빠르게 분류하면,</p>
-          <p>③ <b className="text-foreground">지금 뭘 공부하고 뭘 버릴지</b>를 지도로 보여줍니다.</p>
+          <p>① 강의 녹음을 연결하면, 교수가 강조한 부분에서 <b className="text-foreground">시험에 나올 토픽</b>을 뽑아냅니다.</p>
+          <p>② <b className="text-foreground">훑어 정하기</b>로 아는 것과 모르는 것을 빠르게 가르면,</p>
+          <p>③ <b className="text-foreground">지금 무엇을 공부하고 무엇을 버릴지</b>를 지도로 보여 줍니다.</p>
         </div>
 
         <div className="mt-6 flex items-center justify-center gap-2">

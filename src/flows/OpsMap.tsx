@@ -31,12 +31,12 @@ export function OpsMap({
     `[${courseName} · ${dDay(examDate)}] Exam Radar 학습 로드맵`,
     ``,
     `지금 할 것 (골드존):`,
-    ...now.map((t) => `· ${t.name} — 시험확률 ${Math.round(t.examProb * 100)}%`),
+    ...now.map((t) => `· ${t.name} (시험 확률 ${Math.round(t.examProb * 100)}%)`),
     ``,
-    `버려도 안전: ${dropped.map((t) => t.name).join(", ") || "—"}`,
-    `절약: 약 ${savedMin}분`,
+    `버려도 안전: ${dropped.map((t) => t.name).join(", ") || "없음"}`,
+    `아낀 시간: 약 ${savedMin}분`,
     ``,
-    `— OPTIMETA PAIDEIA`,
+    `by OPTIMETA PAIDEIA`,
   ].join("\n");
 
   const copy = () => {
@@ -52,7 +52,7 @@ export function OpsMap({
             <p className="text-xs text-muted-foreground">
               학습 로드맵 · {courseName} · {dDay(examDate)}
             </p>
-            <p className="text-xl font-normal">지금 이걸 해라</p>
+            <p className="text-xl font-normal">지금 할 것</p>
           </div>
           <button
             type="button"
@@ -67,7 +67,7 @@ export function OpsMap({
         <div className="mb-5 space-y-2">
           {now.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              골드존이 비었습니다. 오늘의 컷으로 분류하세요.
+              골드존이 아직 비어 있어요. 훑어 정하기로 분류해 보세요.
             </p>
           ) : (
             now.map((t, i) => (
@@ -88,9 +88,9 @@ export function OpsMap({
         </div>
 
         <div className="mb-5 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-          <span className="font-normal text-foreground">버려도 안전</span> · {dropped.length}개 · 절약 약{" "}
-          {savedMin}분
-          <p className="mt-1 line-clamp-2">{dropped.map((t) => t.name).join(", ") || "—"}</p>
+          <span className="font-normal text-foreground">버려도 안전</span> · {dropped.length}개 · 약{" "}
+          {savedMin}분 절약
+          <p className="mt-1 line-clamp-2">{dropped.map((t) => t.name).join(", ") || "없음"}</p>
         </div>
 
         <div className="flex items-center justify-between gap-2">
@@ -98,11 +98,11 @@ export function OpsMap({
             <Copy className="size-4" /> 복사
           </Button>
           <Button size="sm" onClick={onClose}>
-            맵으로
+            지도 보기
           </Button>
         </div>
         <p className="mt-3 text-center text-xs text-muted-foreground">
-          더 깊은 드릴·채점·반복은 PAIDEIA Study OS에서
+          더 깊은 반복 학습과 채점은 PAIDEIA Study OS에서 이어집니다
         </p>
       </div>
     </div>

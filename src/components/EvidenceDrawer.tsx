@@ -32,7 +32,7 @@ export function EvidenceDrawer({
     <div className="frost anim-drawer absolute right-0 top-0 z-20 flex h-full w-80 flex-col border-l">
       <div className="flex items-start justify-between border-b px-4 py-3">
         <div>
-          <p className="text-xs text-muted-foreground">증거 · 교수 발화</p>
+          <p className="text-xs text-muted-foreground">근거 · 교수의 발언</p>
           <p className="text-base font-normal">{topic.name}</p>
         </div>
         <button
@@ -46,13 +46,13 @@ export function EvidenceDrawer({
       </div>
       <div className="flex items-center gap-3 border-b px-4 py-2 text-xs text-muted-foreground">
         <span>
-          시험확률 <span className="font-normal text-foreground">{Math.round(topic.examProb * 100)}%</span>
+          시험 확률 <span className="font-normal text-foreground">{Math.round(topic.examProb * 100)}%</span>
         </span>
-        <span>신호 {points.length}건</span>
+        <span>근거 {points.length}개</span>
       </div>
       <div className="flex-1 space-y-3 overflow-auto p-4">
         {points.length === 0 ? (
-          <p className="text-sm text-muted-foreground">이 토픽에 대한 발화 신호가 없습니다.</p>
+          <p className="text-sm text-muted-foreground">이 토픽에 대한 교수의 발언이 없습니다.</p>
         ) : (
           points.map((p, i) => (
             <div key={i} className="rounded-lg border p-3">
@@ -67,7 +67,7 @@ export function EvidenceDrawer({
                     onClick={() => jump(p.noteId)}
                     className="flex items-center gap-1 transition-colors hover:text-foreground"
                   >
-                    <Play className="size-3" /> 노트로
+                    <Play className="size-3" /> 노트 열기
                   </button>
                 ) : null}
               </div>

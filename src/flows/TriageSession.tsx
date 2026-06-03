@@ -35,7 +35,7 @@ export function TriageSession({ topics, pointsByTopic, onRate, onDrop, onClose }
       <div className="frost anim-panel relative max-h-[92%] w-[min(92%,520px)] overflow-auto rounded-2xl border p-6">
         <div className="mb-5 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            오늘의 컷 · {Math.min(i + 1, queue.length)}/{queue.length}
+            훑어 정하기 · {Math.min(i + 1, queue.length)}/{queue.length}
           </p>
           <button
             type="button"
@@ -49,11 +49,11 @@ export function TriageSession({ topics, pointsByTopic, onRate, onDrop, onClose }
 
         {done ? (
           <div className="py-6 text-center">
-            <p className="mb-1 text-xl font-normal">분류 완료</p>
+            <p className="mb-1 text-xl font-normal">다 정했어요</p>
             <p className="mb-5 text-sm text-muted-foreground">
-              맵이 갱신됐습니다. 골드존부터 시작하세요.
+              지도가 새로 그려졌어요. 골드존부터 시작하세요.
             </p>
-            <Button onClick={onClose}>맵으로</Button>
+            <Button onClick={onClose}>지도 보기</Button>
           </div>
         ) : cur ? (
           <>
@@ -62,7 +62,7 @@ export function TriageSession({ topics, pointsByTopic, onRate, onDrop, onClose }
                 className="mb-2 text-xs font-normal"
                 style={{ color: cur.examProb >= 0.6 ? "var(--accent-1)" : "var(--fg-500)" }}
               >
-                시험확률 {Math.round(cur.examProb * 100)}%
+                시험 확률 {Math.round(cur.examProb * 100)}%
               </p>
               <p className="text-2xl font-normal">{cur.name}</p>
               {topPoint ? (
@@ -82,11 +82,11 @@ export function TriageSession({ topics, pointsByTopic, onRate, onDrop, onClose }
                 모른다
               </Button>
               <Button variant="ghost" onClick={drop}>
-                버린다
+                버리기
               </Button>
             </div>
             <p className="mt-3 text-center text-xs text-muted-foreground">
-              한 번의 선택 = 자신감 + 킵/컷
+              한 번 고르면 자신감과 남길지 버릴지가 함께 정해집니다
             </p>
           </>
         ) : null}

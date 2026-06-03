@@ -6,9 +6,9 @@ type Dict = Record<string, string>;
 
 const ko: Dict = {
   "app.title": "Exam Radar",
-  "app.tagline": "공부 적게, 점수 더 — 무엇을 버릴지부터 정하라",
-  "runtime.connected": "Alt 런타임 연결됨",
-  "runtime.preview": "로컬 브라우저 프리뷰",
+  "app.tagline": "공부는 적게, 점수는 높게. 무엇을 버릴지부터 정하세요",
+  "runtime.connected": "Alt에 연결됨",
+  "runtime.preview": "브라우저 미리보기",
   "course.empty": "아직 코스가 없습니다. 강의 녹음을 연결해 시작하세요.",
   "course.load": "코스 로드",
   "spike.run": "스파이크 실행",

@@ -9,7 +9,7 @@ export function UnratedTray({ topics }: { topics: Topic[] }) {
     <aside className="frost flex w-44 shrink-0 flex-col overflow-hidden rounded-xl border xl:w-52">
       <div className="shrink-0 border-b px-3 py-2.5">
         <p className="text-sm">미평가 {topics.length}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">맵으로 끌어다 놓아 분류</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">지도로 끌어다 놓으면 분류돼요</p>
       </div>
       <div className="min-h-0 flex-1 space-y-1 overflow-auto p-2">
         {sorted.map((t) => (

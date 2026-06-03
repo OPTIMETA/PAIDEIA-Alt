@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Eye, HelpCircle, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
+import { HelpCircle, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
 import logoUrl from "@/assets/optimeta-logo.png";
 
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,6 @@ export default function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [budget, setBudget] = useState<number | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [gapMode, setGapMode] = useState(false);
   const [growth, setGrowth] = useState<string | null>(null);
   const [collectProgress, setCollectProgress] = useState<{
     done: number;
@@ -107,15 +106,7 @@ export default function App() {
   const total = useMemo(() => totalCostMin(topics), [topics]);
   const { cut, savedMin } = useMemo(() => budgetCut(topics, budget), [topics, budget]);
   const goldCount = topics.filter((tp) => tp.triage === "gold").length;
-  // Taught vs Tested 렌즈: 시험신호(examPoint) 없는 토픽 = 가르쳤지만 시험낼 신호 없음
-  const noSignalIds = useMemo(
-    () =>
-      new Set(
-        topics.filter((tp) => !examPoints.some((p) => p.topicId === tp.id)).map((tp) => tp.id),
-      ),
-    [topics, examPoints],
-  );
-  const dimmedIds = gapMode ? noSignalIds : cut;
+  const dimmedIds = cut; // 시간 예산 초과분만 흐리게
   const allUnrated = topics.length > 0 && topics.every((tp) => tp.confidence === null);
   const collecting = collectProgress !== null;
   // #5: 미평가(분류 전, 버리지 않은) 토픽 → 오른쪽 트레이. 맵엔 평가된 것만.
@@ -211,7 +202,7 @@ export default function App() {
   // 수집 — 가운데 진행 팝업과 함께(생성 직후 자동 · 헤더 · transcriptUpdated 공용).
   const runCollect = useCallback(async (courseId: string, onlyNoteId?: number) => {
     if (!hasAltRuntime()) {
-      setStatus("Alt 런타임에서만 수집할 수 있습니다.");
+      setStatus("Alt 안에서만 수집할 수 있습니다.");
       return;
     }
     setStatus(null);
@@ -229,16 +220,17 @@ export default function App() {
       }
       const parts: string[] = [];
       if (res.lectureCount === 0)
-        parts.push("연결된 강의가 없습니다 — '강의 추가'로 강의 녹음 노트를 연결하세요.");
-      if (res.ingested > 0) parts.push(`${res.ingested}개 강의에서 노드 생성 완료.`);
+        parts.push("아직 연결된 강의가 없습니다. ‘강의 추가’로 강의 녹음을 연결하세요.");
+      if (res.ingested > 0) parts.push(`강의 ${res.ingested}개에서 토픽을 뽑았습니다.`);
       if (res.skippedNoTranscript > 0)
-        parts.push(`${res.skippedNoTranscript}개는 트랜스크립트가 비어 건너뜀.`);
-      if (res.errors.length > 0) parts.push(`실패 ${res.errors.length}건 — ${res.errors[0].message}`);
+        parts.push(`${res.skippedNoTranscript}개는 녹음 기록이 비어 있어 건너뛰었습니다.`);
+      if (res.errors.length > 0)
+        parts.push(`${res.errors.length}개는 처리하지 못했습니다. ${res.errors[0].message}`);
       if (parts.length === 0 && res.lectureCount > 0)
-        parts.push("새로 수집할 강의가 없습니다(이미 수집됨).");
+        parts.push("새로 수집할 강의가 없습니다. 이미 모두 처리했습니다.");
       if (parts.length) setStatus(parts.join(" "));
     } catch (e) {
-      setStatus(`수집 실패: ${e instanceof Error ? e.message : String(e)}`);
+      setStatus(`수집하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setCollectProgress(null);
     }
@@ -256,7 +248,7 @@ export default function App() {
         if (lectures.length > 0) await runCollect(id);
       } catch (e) {
         // 조용한 실패 방지 — 저장 키/값 오류 등을 표면화
-        setStatus(`코스 생성 실패: ${e instanceof Error ? e.message : String(e)}`);
+        setStatus(`코스를 만들지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
       }
     },
     [runCollect],
@@ -272,7 +264,7 @@ export default function App() {
         setLectures(merged);
         await runCollect(activeId);
       } catch (e) {
-        setStatus(`강의 추가 실패: ${e instanceof Error ? e.message : String(e)}`);
+        setStatus(`강의를 추가하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
       }
     },
     [activeId, runCollect],
@@ -434,15 +426,6 @@ export default function App() {
                 <HelpCircle className="size-4" />
               </Button>
               <Button
-                variant={gapMode ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setGapMode((v) => !v)}
-                title="가르친 것 vs 시험낼 것 (시험신호 없는 토픽 흐리게)"
-              >
-                <Eye className="size-4" />
-                <span className="hidden lg:inline">갭</span>
-              </Button>
-              <Button
                 variant="ghost"
                 size="sm"
                 onClick={isAlt ? () => setAddOpen(true) : handleDemoGrow}
@@ -465,7 +448,7 @@ export default function App() {
                 className={allUnrated ? "animate-pulse" : undefined}
               >
                 <Scissors className="size-4" />
-                <span className="hidden sm:inline">오늘의 컷</span>
+                <span className="hidden sm:inline">훑어 정하기</span>
               </Button>
             </div>
           </div>
@@ -484,14 +467,14 @@ export default function App() {
               <div className="pointer-events-none absolute inset-0 grid place-items-center px-8 text-center">
                 <p className="max-w-sm text-sm text-muted-foreground">
                   <b className="text-foreground">강의 추가</b>로 강의 녹음을 연결하면, 교수가 강조한
-                  시험 핫존이 노드로 채워집니다.
+                  토픽이 지도에 나타납니다.
                 </p>
               </div>
             ) : allUnrated ? (
               <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
                 <div className="frost rounded-full border px-4 py-1.5 text-xs text-muted-foreground">
-                  오른쪽 <b className="text-foreground">미평가</b>에서 노드를 맵으로 끌어다 놓아
-                  분류하세요 · 또는 <b className="text-foreground">오늘의 컷</b>
+                  오른쪽 <b className="text-foreground">미평가</b> 목록에서 토픽을 지도로 끌어다 놓으면
+                  분류됩니다 · 또는 <b className="text-foreground">훑어 정하기</b>
                 </div>
               </div>
             ) : null}

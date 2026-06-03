@@ -369,9 +369,8 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
     <div className="flex h-full w-full flex-col">
       {/* 범례 — 맵 위 별도 줄(겹침 방지) */}
       <div className="shrink-0 px-3 pb-1 pt-1.5 text-xs leading-tight text-muted-foreground">
-        <b className="text-foreground">X →</b> 시험확률(교수 발화·반복) ·{" "}
-        <b className="text-foreground">Y ↑</b> 자신감 ·{" "}
-        <span style={{ color: "var(--accent-1)" }}>●</span> 골드존 = 지금 할 것 · 🎙 교수 강조
+        가로는 <b className="text-foreground">시험 확률</b>, 세로는 <b className="text-foreground">자신감</b>입니다 ·{" "}
+        <span style={{ color: "var(--accent-1)" }}>●</span> 골드존은 지금 할 곳 · 🎙 교수가 강조한 부분
       </div>
       <div
         ref={wrapRef}
@@ -409,7 +408,7 @@ export function DecisionMap({ topics, onChange, onSelect, dimmedIds, signalCount
 
         {/* 모서리 라벨 (faint, 노드 영역 밖) */}
         <g fontSize={12} fill="var(--fg-700)">
-          <text x={w - PAD_X + 14} y={ratedBottom + 26} textAnchor="end">시험확률 →</text>
+          <text x={w - PAD_X + 14} y={ratedBottom + 26} textAnchor="end">시험 확률 →</text>
           <text x={w - PAD_X + 10} y={PAD_TOP - 2} textAnchor="end">유지만</text>
           <text x={PAD_X - 10} y={PAD_TOP - 2}>이미 안전</text>
           <text x={PAD_X - 10} y={ratedBottom - 6} fill="var(--fg-500)">버려도 안전</text>
