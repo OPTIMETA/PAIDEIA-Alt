@@ -22,14 +22,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TaewoooPark/PAIDEIA"><strong>PAIDEIA</strong> 첫 번째 제품 (Claude Code)</a>
+  <a href="https://github.com/OPTIMETA/PAIDEIA"><strong>PAIDEIA</strong> 첫 번째 제품 (Claude Code)</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/TaewoooPark/PAIDEIA-codex"><strong>PAIDEIA-codex</strong> (Codex)</a>
+  <a href="https://github.com/OPTIMETA/PAIDEIA-codex"><strong>PAIDEIA-codex</strong> (Codex)</a>
   &nbsp;·&nbsp;
   <a href="https://taewoopark.com">taewoopark.com</a>
 </p>
 
-> **Exam Radar는 OPTIMETA의 철학을 담은 두 번째 제품입니다.** OPTIMETA의 첫 번째 제품은 한 과목을 시험일까지 깊이 끌고 가는 **[PAIDEIA](https://github.com/TaewoooPark/PAIDEIA)**(Claude Code 플러그인)와 **[PAIDEIA-codex](https://github.com/TaewoooPark/PAIDEIA-codex)**(Codex 버전)입니다. Exam Radar는 같은 철학, 곧 *공부는 적게, 점수는 높게*를 Alt 위에서 "결정"이라는 한 가지로 풀어냅니다.
+> **Exam Radar는 OPTIMETA의 철학을 담은 두 번째 제품입니다.** OPTIMETA의 첫 번째 제품은 한 과목을 시험일까지 깊이 끌고 가는 **[PAIDEIA](https://github.com/OPTIMETA/PAIDEIA)**(Claude Code 플러그인)와 **[PAIDEIA-codex](https://github.com/OPTIMETA/PAIDEIA-codex)**(Codex 버전)입니다. Exam Radar는 같은 철학, 곧 *공부는 적게, 점수는 높게*를 Alt 위에서 "결정"이라는 한 가지로 풀어냅니다.
 
 <p align="center">
   <em>교수가 세 시간을 이야기해도, 시험에 나올 신호는 그중 삼십 분에 몰려 있습니다.<br>
@@ -168,6 +168,6 @@ Exam Radar는 강의 녹음을 글로 옮긴 기록에서 그 신호를 뽑아�
 
 OPTIMETA는 최적화(Optimization)와 메타(Meta)를 합친 이름으로, 노력을 한 단계 위에서 최적화한다는 뜻입니다.
 
-[첫 번째 제품 PAIDEIA](https://github.com/TaewoooPark/PAIDEIA) · [PAIDEIA-codex](https://github.com/TaewoooPark/PAIDEIA-codex) · [taewoopark.com](https://taewoopark.com)
+[첫 번째 제품 PAIDEIA](https://github.com/OPTIMETA/PAIDEIA) · [PAIDEIA-codex](https://github.com/OPTIMETA/PAIDEIA-codex) · [taewoopark.com](https://taewoopark.com)
 
 <p align="center"><sub><em>퀴즈를 더 만들지 마세요. 무엇을 공부하고 무엇을 버릴지부터 정하세요.</em></sub></p>
