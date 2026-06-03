@@ -22,16 +22,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TaewoooPark/PAIDEIA"><strong>PAIDEIA</strong> 본 제품 (Claude Code 플러그인)</a>
+  <a href="https://github.com/TaewoooPark/PAIDEIA"><strong>PAIDEIA</strong> 첫 번째 제품 (Claude Code)</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/TaewoooPark/PAIDEIA-codex"><strong>PAIDEIA-codex</strong> Codex 버전</a>
+  <a href="https://github.com/TaewoooPark/PAIDEIA-codex"><strong>PAIDEIA-codex</strong> (Codex)</a>
   &nbsp;·&nbsp;
   <a href="https://taewoopark.com">taewoopark.com</a>
 </p>
 
-> **이것은 완성된 제품이 아니라 입구입니다.** Exam Radar는 OPTIMETA의 첫 제품인 **PAIDEIA Study OS**(Claude Code 플러그인 버전과 데스크톱 앱 버전)로 이어지는 가장 앞단의 맛보기입니다. 깊이 있는 반복 학습과 채점, 결과를 되먹이는 과정은 본 제품에 담겨 있고, 이 플러그인은 그 핵심 가운데 "결정"까지만 보여 줍니다.
-
-> **이것은 결정을 돕는 도구이지, 퀴즈를 만들어 주는 도구가 아닙니다.** Alt 기본 플러그인에는 이미 퀴즈 생성기가 있습니다. 똑같은 퀴즈를 하나 더 만드는 일은 의미가 없습니다. Exam Radar는 새로운 내용을 만들어 내지 않습니다. 대신 무엇이 중요한지 가려내고, 무엇을 버려도 괜찮은지까지 알려 줍니다.
+> **Exam Radar는 OPTIMETA의 철학을 담은 두 번째 제품입니다.** OPTIMETA의 첫 번째 제품은 한 과목을 시험일까지 깊이 끌고 가는 **[PAIDEIA](https://github.com/TaewoooPark/PAIDEIA)**(Claude Code 플러그인)와 **[PAIDEIA-codex](https://github.com/TaewoooPark/PAIDEIA-codex)**(Codex 버전)입니다. Exam Radar는 같은 철학, 곧 *공부는 적게, 점수는 높게*를 Alt 위에서 "결정"이라는 한 가지로 풀어냅니다.
 
 <p align="center">
   <em>교수가 세 시간을 이야기해도, 시험에 나올 신호는 그중 삼십 분에 몰려 있습니다.<br>
@@ -140,7 +138,7 @@ Exam Radar는 강의 녹음을 글로 옮긴 기록에서 그 신호를 뽑아�
 | **시간 예산** | 위쪽 막대 | 공부할 수 있는 시간을 정하면, 그 안에 맞게 로드맵을 추려 줍니다 |
 | **끌어 옮기기** | 노드 끌기 | 노드를 직접 옮겨 자신감과 남길지 버릴지를 손으로 고칩니다 |
 
-> 결과를 보고 스스로 더 똑똑해지는 되먹임 과정은 일부러 넣지 않았습니다. 예측과 실제를 견주며 당신을 학습해 가는 진짜 과정은 본 제품인 PAIDEIA Study OS에 담겨 있습니다. 이 플러그인은 신호를 가려내는 일까지만 온전히 보여 주고 멈춥니다.
+> 예측과 실제를 견주며 학습자에게 더 맞춰 가는 깊은 되먹임은 첫 번째 제품 **PAIDEIA**에 있습니다. Exam Radar는 *무엇을 할지 결정하는* 한 가지에 집중합니다.
 
 ---
 
@@ -153,21 +151,10 @@ Exam Radar는 강의 녹음을 글로 옮긴 기록에서 그 신호를 뽑아�
 
 ---
 
-## 제품이 아니라 입구입니다
-
-```
-Alt 맛보기 (Exam Radar)  →  사전 신청  →  Claude Code 플러그인  →  데스크톱 앱
-결정까지 무료                관심 등록      본격 반복 학습과 채점      완전한 Study OS
-```
-
-깊이 있는 반복 학습과 채점, 결과를 되먹이는 과정, 그리고 쓸수록 쌓이는 데이터는 본 제품의 몫입니다. 이 플러그인은 OPTIMETA의 더 큰 목표, 곧 마감까지 노력을 가장 알맞게 나눠 쓰자는 생각을 시험이라는 가장 또렷한 사례로 처음 보여 주는 깃발입니다.
-
----
-
 ## 더 알아보기
 
 OPTIMETA는 최적화(Optimization)와 메타(Meta)를 합친 이름으로, 노력을 한 단계 위에서 최적화한다는 뜻입니다.
 
-[본 제품 PAIDEIA](https://github.com/TaewoooPark/PAIDEIA) · [PAIDEIA-codex](https://github.com/TaewoooPark/PAIDEIA-codex) · [taewoopark.com](https://taewoopark.com)
+[첫 번째 제품 PAIDEIA](https://github.com/TaewoooPark/PAIDEIA) · [PAIDEIA-codex](https://github.com/TaewoooPark/PAIDEIA-codex) · [taewoopark.com](https://taewoopark.com)
 
 <p align="center"><sub><em>퀴즈를 더 만들지 마세요. 무엇을 공부하고 무엇을 버릴지부터 정하세요.</em></sub></p>
