@@ -11,18 +11,18 @@
     "events:subscribe",
     "settings:read"
   ],
-  "description": "강의 녹음에서 '무엇을 공부하고 무엇을 버릴지'를 시험일까지 결정하는 2D 결정 맵. 퀴즈가 아니라 결정. by OPTIMETA.",
+  "description": "강의 녹음에서 무엇을 공부하고 무엇을 버릴지를 시험일까지 정해 주는 2차원 결정 지도 by OPTIMETA",
   "author": "OPTIMETA (Taewoo Park)",
   "icon": "optimeta-logo.png",
   "sdkVersion": "1.0",
   "locales": {
     "ko": {
       "name": "PAIDEIA 시험 레이더",
-      "description": "강의 녹음에서 '무엇을 공부하고 무엇을 버릴지'를 시험일까지 결정하는 2D 결정 맵. 퀴즈가 아니라 결정."
+      "description": "강의 녹음에서 무엇을 공부하고 무엇을 버릴지를 시험일까지 정해 주는 2차원 결정 지도 by OPTIMETA"
     },
     "en": {
       "name": "PAIDEIA Exam Radar",
-      "description": "A 2D decision map that decides what to study and what to drop, from your lecture recordings. Decisions, not quizzes."
+      "description": "A 2D decision map of what to study and what to drop, from your lecture recordings, before the exam — by OPTIMETA"
     }
   }
 }
