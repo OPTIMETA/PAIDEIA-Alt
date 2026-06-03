@@ -1,8 +1,9 @@
 // 수집 파이프라인 (plan.md §6.2, Phase 1) — 강의 트랜스크립트 → 토픽 + 교수 발화 시험신호.
 // generateObject(supportsTools 게이트) 사용. Alt 런타임에서만 동작(alt.ai 필요).
-import { extractObject, pickStructuredModel } from "@/alt/ai";
+import { extractObject } from "@/alt/ai";
 import { extractionSchema } from "@/lib/schemas";
 import type { Extraction, ExamPoint, Topic } from "@/lib/schemas";
+import type { PluginAiModelId } from "alt-plugin-sdk";
 
 function clamp01(n: number): number {
   return Math.min(1, Math.max(0, n));
@@ -23,14 +24,12 @@ function buildPrompt(transcript: string): string {
 ${transcript}`;
 }
 
-/** 단일 강의 트랜스크립트를 토픽/시험신호로 추출. */
+/** 단일 강의 트랜스크립트를 토픽/시험신호로 추출. 모델은 호출부에서 1회 선택해 주입(루프당 재선택 방지). */
 export async function ingestTranscript(
   transcript: string,
   noteId: number,
+  model: PluginAiModelId,
 ): Promise<{ topics: Topic[]; examPoints: ExamPoint[] }> {
-  const model = await pickStructuredModel();
-  if (!model) throw new Error("Alt 런타임/모델이 없습니다 — 인앱에서 실행하세요.");
-
   const ex: Extraction = await extractObject(extractionSchema, buildPrompt(transcript), model);
 
   const topics: Topic[] = ex.topics.map((tp, i) => ({

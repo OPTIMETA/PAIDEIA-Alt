@@ -10,6 +10,7 @@ import { OpsMap } from "@/flows/OpsMap";
 import { NewCourse } from "@/flows/NewCourse";
 import { Welcome } from "@/flows/Welcome";
 import { Help } from "@/flows/Help";
+import { CollectProgress } from "@/flows/CollectProgress";
 import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { alt, hasAltRuntime } from "@/alt/client";
 import {
@@ -43,7 +44,11 @@ export default function App() {
   const [status, setStatus] = useState<string | null>(null);
   const [gapMode, setGapMode] = useState(false);
   const [growth, setGrowth] = useState<string | null>(null);
-  const [collecting, setCollecting] = useState(false);
+  const [collectProgress, setCollectProgress] = useState<{
+    done: number;
+    total: number;
+    label: string;
+  } | null>(null);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -99,6 +104,7 @@ export default function App() {
   );
   const dimmedIds = gapMode ? noSignalIds : cut;
   const allUnrated = topics.length > 0 && topics.every((tp) => tp.confidence === null);
+  const collecting = collectProgress !== null;
 
   // 토픽별 교수 발화 신호(증거) — 가중치 내림차순
   const pointsByTopic = useMemo(() => {
@@ -184,6 +190,42 @@ export default function App() {
     [persist],
   );
 
+  // 수집 — 가운데 진행 팝업과 함께(생성 직후 자동 · 헤더 · transcriptUpdated 공용).
+  const runCollect = useCallback(async (courseId: string, onlyNoteId?: number) => {
+    if (!hasAltRuntime()) {
+      setStatus("Alt 런타임에서만 수집할 수 있습니다.");
+      return;
+    }
+    setStatus(null);
+    setCollectProgress({ done: 0, total: 0, label: "준비 중…" });
+    try {
+      const res = await collectCourse(courseId, {
+        onlyNoteId,
+        onProgress: (done, total, label) => setCollectProgress({ done, total, label }),
+      });
+      setTopics(res.topics);
+      setExamPoints(res.examPoints);
+      if (res.ingested > 0) {
+        setGrowth(`강의 ${res.ingested}개 수집`);
+        window.setTimeout(() => setGrowth(null), 4000);
+      }
+      const parts: string[] = [];
+      if (res.lectureCount === 0)
+        parts.push("연결된 강의가 없습니다 — '강의 추가'로 강의 녹음 노트를 연결하세요.");
+      if (res.ingested > 0) parts.push(`${res.ingested}개 강의에서 노드 생성 완료.`);
+      if (res.skippedNoTranscript > 0)
+        parts.push(`${res.skippedNoTranscript}개는 트랜스크립트가 비어 건너뜀.`);
+      if (res.errors.length > 0) parts.push(`실패 ${res.errors.length}건 — ${res.errors[0].message}`);
+      if (parts.length === 0 && res.lectureCount > 0)
+        parts.push("새로 수집할 강의가 없습니다(이미 수집됨).");
+      if (parts.length) setStatus(parts.join(" "));
+    } catch (e) {
+      setStatus(`수집 실패: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setCollectProgress(null);
+    }
+  }, []);
+
   const handleCreateCourse = useCallback(
     async (name: string, date: string | null, lectures: Lecture[]) => {
       try {
@@ -192,46 +234,14 @@ export default function App() {
         setCourses(cs);
         setActiveId(id);
         setWizardOpen(false);
+        // #3: '만들기' 직후 자동 수집 — 강의가 연결돼 있으면 진행 팝업과 함께 노드 생성.
+        if (lectures.length > 0) await runCollect(id);
       } catch (e) {
         // 조용한 실패 방지 — 저장 키/값 오류 등을 표면화
         setStatus(`코스 생성 실패: ${e instanceof Error ? e.message : String(e)}`);
       }
     },
-    [],
-  );
-
-  // 수집(Accrue) — Alt: 연결 강의 ingest. 성장 diff 표시.
-  const handleCollect = useCallback(
-    async (noteId?: number) => {
-      if (!activeId) return;
-      setCollecting(true);
-      setStatus(null);
-      try {
-        // noteId 지정(transcriptUpdated) → 그 노트만 재수집(이미 ingested여도). 없으면 pending 전체.
-        const res = await collectCourse(activeId, noteId);
-        setTopics(res.topics);
-        setExamPoints(res.examPoints);
-        if (res.ingested > 0) {
-          setGrowth(`강의 ${res.ingested}개 수집`);
-          window.setTimeout(() => setGrowth(null), 4000);
-        }
-        // 결과를 항상 표시(빈 강의·트랜스크립트 없음·실패도 무반응 금지)
-        const parts: string[] = [];
-        if (res.lectureCount === 0)
-          parts.push("연결된 강의가 없습니다 — '새 코스'에서 강의 녹음 노트를 연결하세요.");
-        if (res.ingested > 0) parts.push(`${res.ingested}개 강의 수집 완료.`);
-        if (res.skippedNoTranscript > 0)
-          parts.push(`${res.skippedNoTranscript}개는 트랜스크립트가 비어 건너뜀.`);
-        if (res.errors.length > 0) parts.push(`실패 ${res.errors.length}건 — ${res.errors[0].message}`);
-        if (parts.length === 0) parts.push("새로 수집할 강의가 없습니다(이미 수집됨).");
-        setStatus(parts.join(" "));
-      } catch (e) {
-        setStatus(`수집 실패: ${e instanceof Error ? e.message : String(e)}`);
-      } finally {
-        setCollecting(false);
-      }
-    },
-    [activeId],
+    [runCollect],
   );
 
   // 프리뷰: 데모 강의 병합으로 Accrue(코스가 자란다) + 성장 diff 시연
@@ -259,7 +269,7 @@ export default function App() {
     void (async () => {
       try {
         unsub = await alt.events.subscribe("transcriptUpdated", (payload) => {
-          void handleCollect(payload.noteId);
+          if (activeId) void runCollect(activeId, payload.noteId);
         });
       } catch {
         /* noop */
@@ -268,7 +278,7 @@ export default function App() {
     return () => {
       if (unsub) void unsub();
     };
-  }, [activeId, handleCollect]);
+  }, [activeId, runCollect]);
 
   // 첫 실행 환영 닫기(+영속)
   const dismissWelcome = useCallback(() => {
@@ -401,7 +411,9 @@ export default function App() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={isAlt ? () => void handleCollect() : handleDemoGrow}
+                onClick={
+                  isAlt ? () => { if (activeId) void runCollect(activeId); } : handleDemoGrow
+                }
                 disabled={collecting}
               >
                 <Sparkles className="size-4" />
@@ -513,6 +525,8 @@ export default function App() {
       ) : null}
 
       {helpOpen ? <Help onClose={() => setHelpOpen(false)} /> : null}
+
+      {collectProgress ? <CollectProgress {...collectProgress} /> : null}
     </div>
   );
 }

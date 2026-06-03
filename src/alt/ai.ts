@@ -13,8 +13,11 @@ export async function pickStructuredModel(): Promise<PluginAiModelId | null> {
   if (!hasAltRuntime()) return null;
   try {
     const models = await alt.ai.models.list();
-    const tooled = models.find((m) => m.supportsTools && m.availability !== "unavailable");
-    return tooled?.id ?? models[0]?.id ?? "auto";
+    const tooled = models.filter((m) => m.supportsTools && m.availability !== "unavailable");
+    // 수집 속도용: tools 지원 중 더 빠른(소형) 모델 우선 — 추출 정확도엔 충분.
+    const fast = /haiku|mini|flash|fast|small|lite|nano|turbo|8b|7b|9b/i;
+    const fastModel = tooled.find((m) => fast.test(m.id));
+    return fastModel?.id ?? tooled[0]?.id ?? models[0]?.id ?? "auto";
   } catch {
     return "auto";
   }
