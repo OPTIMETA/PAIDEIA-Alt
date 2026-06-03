@@ -8,6 +8,7 @@ import { DecisionMap } from "@/viz/DecisionMap";
 import { TriageSession } from "@/flows/TriageSession";
 import { OpsMap } from "@/flows/OpsMap";
 import { NewCourse } from "@/flows/NewCourse";
+import { AddLectures } from "@/flows/AddLectures";
 import { Welcome } from "@/flows/Welcome";
 import { Help } from "@/flows/Help";
 import { CollectProgress } from "@/flows/CollectProgress";
@@ -15,13 +16,20 @@ import { EvidenceDrawer } from "@/components/EvidenceDrawer";
 import { alt, hasAltRuntime } from "@/alt/client";
 import {
   getExamPoints,
+  getLectures,
   getTopics,
   getUiFlag,
   setExamPoints as saveExamPoints,
   setTopics as saveTopics,
   setUiFlag,
 } from "@/alt/storage";
-import { createCourse, ensureSeedCourse, listCourses, type CourseRef } from "@/alt/courses";
+import {
+  addLectures,
+  createCourse,
+  ensureSeedCourse,
+  listCourses,
+  type CourseRef,
+} from "@/alt/courses";
 import { collectCourse } from "@/pipeline/collect";
 import { mergeTopics } from "@/pipeline/ingest";
 import { budgetCut, totalCostMin } from "@/lib/budget";
@@ -52,6 +60,8 @@ export default function App() {
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
 
   // 코스 목록 로드 (없으면 데모 시드)
   useEffect(() => {
@@ -76,9 +86,11 @@ export default function App() {
     void (async () => {
       const tp = await getTopics(activeId);
       const ep = await getExamPoints(activeId);
+      const lec = await getLectures(activeId);
       if (!alive) return;
       setTopics(tp);
       setExamPoints(ep);
+      setLectures(lec);
       setSelectedId(null);
       setBudget(null);
     })();
@@ -242,6 +254,22 @@ export default function App() {
       }
     },
     [runCollect],
+  );
+
+  // #2: 나중에 생긴 강의 노트를 기존 코스에 추가 → 즉시 수집.
+  const handleAddLectures = useCallback(
+    async (newLectures: Lecture[]) => {
+      if (!activeId) return;
+      setAddOpen(false);
+      try {
+        const merged = await addLectures(activeId, newLectures);
+        setLectures(merged);
+        await runCollect(activeId);
+      } catch (e) {
+        setStatus(`강의 추가 실패: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    },
+    [activeId, runCollect],
   );
 
   // 프리뷰: 데모 강의 병합으로 Accrue(코스가 자란다) + 성장 diff 시연
@@ -411,16 +439,14 @@ export default function App() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={
-                  isAlt ? () => { if (activeId) void runCollect(activeId); } : handleDemoGrow
-                }
+                onClick={isAlt ? () => setAddOpen(true) : handleDemoGrow}
                 disabled={collecting}
               >
                 <Sparkles className="size-4" />
                 {collecting ? (
                   <span>수집 중…</span>
                 ) : (
-                  <span className="hidden lg:inline">{isAlt ? "수집" : "데모 강의"}</span>
+                  <span className="hidden lg:inline">{isAlt ? "강의 추가" : "데모 강의"}</span>
                 )}
               </Button>
               <Button variant="secondary" size="sm" onClick={() => setOpsOpen(true)}>
@@ -496,6 +522,14 @@ export default function App() {
 
             {wizardOpen ? (
               <NewCourse onCreate={handleCreateCourse} onClose={() => setWizardOpen(false)} />
+            ) : null}
+
+            {addOpen ? (
+              <AddLectures
+                existingNoteIds={lectures.map((l) => l.noteId)}
+                onAdd={handleAddLectures}
+                onClose={() => setAddOpen(false)}
+              />
             ) : null}
           </div>
         </div>

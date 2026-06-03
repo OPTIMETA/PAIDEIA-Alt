@@ -1,6 +1,7 @@
 // 코스 repository (plan.md §3, §6.1) — 멀티코스 목록·생성·시드.
 import {
   addCourseId,
+  getLectures,
   getMeta,
   listCourseIds,
   setExamPoints,
@@ -52,6 +53,15 @@ export async function createCourse(
   await setMeta(id, { schemaVersion: SCHEMA_VERSION, name, examDate, lang });
   if (lectures.length > 0) await setLectures(id, lectures);
   return id;
+}
+
+/** 기존 코스에 강의 노트를 추가(노트가 나중에 생겨도 재임포트 가능). noteId 기준 중복 제거. */
+export async function addLectures(courseId: string, incoming: Lecture[]): Promise<Lecture[]> {
+  const existing = await getLectures(courseId);
+  const have = new Set(existing.map((l) => l.noteId));
+  const merged = [...existing, ...incoming.filter((l) => !have.has(l.noteId))];
+  await setLectures(courseId, merged);
+  return merged;
 }
 
 /** 코스가 하나도 없으면 데모(선형대수)를 시드하고 그 id를 반환. */
