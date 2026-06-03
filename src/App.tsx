@@ -104,7 +104,7 @@ export default function App() {
   const examDate = activeMeta?.examDate ?? null;
 
   const total = useMemo(() => totalCostMin(topics), [topics]);
-  const { cut, savedMin } = useMemo(() => budgetCut(topics, budget), [topics, budget]);
+  const { cut, savedPct } = useMemo(() => budgetCut(topics, budget), [topics, budget]);
   const goldCount = topics.filter((tp) => tp.triage === "gold").length;
   const dimmedIds = cut; // 시간 예산 초과분만 흐리게
   const allUnrated = topics.length > 0 && topics.every((tp) => tp.confidence === null);
@@ -394,7 +394,7 @@ export default function App() {
 
           <div className="flex shrink-0 items-center gap-4">
             <div className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground md:flex">
-              <span className="hidden lg:inline">예산</span>
+              <span className="hidden lg:inline">공부량</span>
               <input
                 type="range"
                 min={0}
@@ -407,12 +407,11 @@ export default function App() {
                 }}
                 className="w-20 lg:w-28"
                 style={{ accentColor: "var(--accent-1)" }}
-                aria-label="시간 예산"
+                aria-label="공부량 조절"
               />
-              <span className="mono w-10 text-foreground">
-                {budget == null ? "전체" : `${(budget / 60).toFixed(1)}h`}
+              <span className="mono w-14 text-foreground">
+                {budget == null ? "전체" : `${savedPct}% 절약`}
               </span>
-              {budget != null ? <span className="hidden lg:inline">· 절약 {savedMin}분</span> : null}
             </div>
 
             <div className="flex shrink-0 items-center gap-1.5">
@@ -500,8 +499,6 @@ export default function App() {
             {opsOpen ? (
               <OpsMap
                 topics={topics}
-                cut={cut}
-                savedMin={savedMin}
                 examDate={examDate}
                 courseName={courseName}
                 signalCounts={signalCounts}

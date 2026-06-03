@@ -1,42 +1,58 @@
-// 학습 로드맵 (plan.md §3.5 출력) — triage 결과 1페이지: 지금 할 것(골드존) · 버린 것 · 절약 시간.
-// 복사(공유) + PAIDEIA 전환 CTA.
+// 학습 로드맵 (plan.md §3.5 출력) — triage 결과 1페이지: 지금 할 것(골드존) · 버려도 안전 · 전체 대비 절약 비율.
+// 복사 폼은 PAIDEIA(Claude Code/Codex) 분석·임포트용으로 형식을 고정한다(exam-radar:v1 마커).
 import { Copy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { dDay } from "@/lib/triage";
 import type { Topic } from "@/lib/schemas";
 
+const pct = (t: Topic) => Math.round(t.examProb * 100);
+const byProb = (a: Topic, b: Topic) => b.examProb - a.examProb;
+
 export function OpsMap({
   topics,
-  cut,
-  savedMin,
   examDate,
   courseName,
   signalCounts,
   onClose,
 }: {
   topics: Topic[];
-  cut: ReadonlySet<string>;
-  savedMin: number;
   examDate: string | null;
   courseName: string;
   signalCounts?: ReadonlyMap<string, number>;
   onClose: () => void;
 }) {
-  const now = topics
-    .filter((t) => t.triage === "gold" && !cut.has(t.id))
-    .sort((a, b) => b.examProb - a.examProb);
-  const dropped = topics.filter((t) => cut.has(t.id) || t.triage === "trap");
+  const now = topics.filter((t) => t.triage === "gold").sort(byProb);
+  const strong = topics.filter((t) => t.triage === "keep" || t.triage === "safe").sort(byProb);
+  const dropped = topics.filter((t) => t.triage === "trap" || t.triage === "drop").sort(byProb);
+  // 분 단위 시간 추정은 가짜라 쓰지 않고, 전체 토픽 중 버려도 되는 비율(%)만.
+  const savedPct = topics.length > 0 ? Math.round((dropped.length / topics.length) * 100) : 0;
 
+  // PAIDEIA 분석/임포트용 고정 폼 (markdown + exam-radar:v1 마커, "이름 · 시험확률 N%" 필드).
+  const sig = (t: Topic) => ((signalCounts?.get(t.id) ?? 0) > 0 ? " · 🎙" : "");
+  const lines = (arr: Topic[], ranked: boolean, withSig = false) =>
+    arr.length > 0
+      ? arr.map((t, i) => `${ranked ? `${i + 1}.` : "-"} ${t.name} · 시험확률 ${pct(t)}%${withSig ? sig(t) : ""}`)
+      : ["(없음)"];
   const summary = [
-    `[${courseName} · ${dDay(examDate)}] Exam Radar 학습 로드맵`,
+    `# Exam Radar 작전 — ${courseName}`,
+    `<!-- exam-radar:v1 source=alt -->`,
     ``,
-    `지금 할 것 (골드존):`,
-    ...now.map((t) => `· ${t.name} (시험 확률 ${Math.round(t.examProb * 100)}%)`),
+    `- 코스: ${courseName}`,
+    `- 시험까지: ${dDay(examDate)}`,
+    `- 토픽: 총 ${topics.length}개 (골드존 ${now.length} · 버려도 안전 ${dropped.length})`,
+    `- 버려도 안전 비중: 전체의 ${savedPct}%`,
     ``,
-    `버려도 안전: ${dropped.map((t) => t.name).join(", ") || "없음"}`,
-    `아낀 시간: 약 ${savedMin}분`,
+    `## 지금 할 것 — 골드존 (시험확률 높음 · 아직 약함)`,
+    ...(now.length > 0 ? lines(now, true, true) : ["(아직 없음 — ‘훑어 정하기’로 분류하세요)"]),
     ``,
-    `by OPTIMETA PAIDEIA`,
+    `## 이미 다진 것 (잘 알거나 시험에 덜 나옴)`,
+    ...lines(strong, false),
+    ``,
+    `## 버려도 안전 (안 해도 되는 것)`,
+    ...lines(dropped, false),
+    ``,
+    `---`,
+    `출처: OPTIMETA · Exam Radar(Alt). 더 깊은 반복 학습·채점은 PAIDEIA / PAIDEIA-codex에서.`,
   ].join("\n");
 
   const copy = () => {
@@ -88,8 +104,8 @@ export function OpsMap({
         </div>
 
         <div className="mb-5 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-          <span className="font-normal text-foreground">버려도 안전</span> · {dropped.length}개 · 약{" "}
-          {savedMin}분 절약
+          <span className="font-normal text-foreground">버려도 안전</span> · {dropped.length}개 · 전체의{" "}
+          {savedPct}%
           <p className="mt-1 line-clamp-2">{dropped.map((t) => t.name).join(", ") || "없음"}</p>
         </div>
 
