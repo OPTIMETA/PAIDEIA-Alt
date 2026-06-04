@@ -4,6 +4,7 @@ import {
   getLectures,
   getMeta,
   listCourseIds,
+  purgeCourse,
   setExamPoints,
   setLectures,
   setMeta,
@@ -62,6 +63,24 @@ export async function addLectures(courseId: string, incoming: Lecture[]): Promis
   const merged = [...existing, ...incoming.filter((l) => !have.has(l.noteId))];
   await setLectures(courseId, merged);
   return merged;
+}
+
+/** 코스명·시험일 수정. id는 storage 키라 불변 — 메타만 갱신한다. */
+export async function updateCourseMeta(
+  id: string,
+  patch: { name?: string; examDate?: string | null },
+): Promise<void> {
+  const meta = await getMeta(id);
+  if (!meta) return;
+  await setMeta(id, { ...meta, ...patch });
+}
+
+/**
+ * 코스 삭제 — Exam Radar에서 이 코스 항목과 파생 데이터만 제거(되돌릴 수 없음).
+ * Alt의 강의 녹음·전사는 그대로 남는다.
+ */
+export async function deleteCourse(id: string): Promise<void> {
+  await purgeCourse(id);
 }
 
 /** 코스가 하나도 없으면 데모(선형대수)를 시드하고 그 id를 반환. */
