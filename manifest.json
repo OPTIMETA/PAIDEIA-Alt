@@ -22,7 +22,26 @@
     },
     "en": {
       "name": "PAIDEIA Exam Radar",
-      "description": "A 2D decision map of what to study and what to drop, from your lecture recordings, before the exam — by OPTIMETA"
+      "description": "A 2D decision map of what to study and what to drop, from your lecture recordings, before the exam, by OPTIMETA"
+    }
+  },
+  "marketplace": {
+    "category": "education",
+    "longDescription": "강의 녹음에서 무엇을 공부하고 무엇을 버릴지를 시험일까지 정해 주는 2차원 결정 지도입니다. 교수가 강조하고 반복한 정도로 시험 확률(가로축)을, 당신의 자신감(세로축)을 잡아 토픽을 네 칸으로 나눕니다. 지금 해야 할 골드존, 가볍게 유지할 곳, 이미 안전한 곳, 버려도 안전한 곳입니다. 훑어 정하기로 한 장씩 빠르게 분류하고, 학습 로드맵으로 지금 할 것과 버린 것, 아낀 시간을 한 페이지에 모읍니다. 시간 예산을 정하면 그 안에 맞게 추려 주고, 노드를 누르면 교수의 실제 발언과 시점이 근거로 나옵니다. 강의가 쌓일수록 지도는 함께 자랍니다. 문제를 더 만드는 퀴즈가 아니라 공부할 양을 줄여 주는 결정 도구입니다. 공부는 적게, 점수는 높게. by OPTIMETA.",
+    "screenshots": [
+      "screenshots/exam-radar.jpg",
+      "screenshots/triage.jpg",
+      "screenshots/roadmap.jpg",
+      "screenshots/evidence.jpg",
+      "screenshots/help.jpg"
+    ],
+    "locales": {
+      "ko": {
+        "longDescription": "강의 녹음에서 무엇을 공부하고 무엇을 버릴지를 시험일까지 정해 주는 2차원 결정 지도입니다. 교수가 강조하고 반복한 정도로 시험 확률(가로축)을, 당신의 자신감(세로축)을 잡아 토픽을 네 칸으로 나눕니다. 지금 해야 할 골드존, 가볍게 유지할 곳, 이미 안전한 곳, 버려도 안전한 곳입니다. 훑어 정하기로 한 장씩 빠르게 분류하고, 학습 로드맵으로 지금 할 것과 버린 것, 아낀 시간을 한 페이지에 모읍니다. 시간 예산을 정하면 그 안에 맞게 추려 주고, 노드를 누르면 교수의 실제 발언과 시점이 근거로 나옵니다. 강의가 쌓일수록 지도는 함께 자랍니다. 문제를 더 만드는 퀴즈가 아니라 공부할 양을 줄여 주는 결정 도구입니다. 공부는 적게, 점수는 높게. by OPTIMETA."
+      },
+      "en": {
+        "longDescription": "A 2D decision map that turns your lecture recordings into a plan of what to study and what to drop before the exam. Each topic is placed by exam probability on the horizontal axis, set by how hard your professor stressed and repeated it, against your own confidence on the vertical axis. That splits the course into four zones: the gold zone to study now, things to lightly maintain, things already safe, and the ones safe to drop. Triage rates topics one card at a time, and the study roadmap gathers what to do now, what you cut, and the time you saved onto a single page. Set a time budget and it trims the plan to fit. Click any node to see the professor's actual words and timestamps as evidence. The map grows as your lectures accumulate. It is not a quiz generator that piles on more work. It is a decision tool that cuts your study load down. Study less, score higher. by OPTIMETA."
+      }
     }
   }
 }
