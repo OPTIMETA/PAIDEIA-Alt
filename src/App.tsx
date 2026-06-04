@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { HelpCircle, Map as MapIcon, PanelLeft, Plus, Scissors, Sparkles } from "lucide-react";
+import { HelpCircle, Map as MapIcon, PanelLeft, Plus, Scissors, Settings, Sparkles } from "lucide-react";
 import logoUrl from "@/assets/optimeta-logo.png";
 
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { DecisionMap } from "@/viz/DecisionMap";
 import { TriageSession } from "@/flows/TriageSession";
 import { OpsMap } from "@/flows/OpsMap";
 import { NewCourse } from "@/flows/NewCourse";
+import { CourseSettings } from "@/flows/CourseSettings";
 import { AddLectures } from "@/flows/AddLectures";
 import { Welcome } from "@/flows/Welcome";
 import { Help } from "@/flows/Help";
@@ -27,8 +28,10 @@ import {
 import {
   addLectures,
   createCourse,
+  deleteCourse,
   ensureSeedCourse,
   listCourses,
+  updateCourseMeta,
   type CourseRef,
 } from "@/alt/courses";
 import { collectCourse } from "@/pipeline/collect";
@@ -61,6 +64,7 @@ export default function App() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
   const [lectures, setLectures] = useState<Lecture[]>([]);
 
   // 코스 목록 로드 (없으면 데모 시드)
@@ -102,6 +106,7 @@ export default function App() {
   const activeMeta = courses.find((c) => c.id === activeId)?.meta ?? null;
   const courseName = activeMeta?.name ?? "—";
   const examDate = activeMeta?.examDate ?? null;
+  const settingsCourse = courses.find((c) => c.id === settingsId) ?? null;
 
   const total = useMemo(() => totalCostMin(topics), [topics]);
   const { cut, savedPct } = useMemo(() => budgetCut(topics, budget), [topics, budget]);
@@ -270,6 +275,33 @@ export default function App() {
     [activeId, runCollect],
   );
 
+  // 좌측 패널 코스 설정 — 코스명·시험일 수정.
+  const handleUpdateCourse = useCallback(
+    async (id: string, name: string, date: string | null) => {
+      try {
+        await updateCourseMeta(id, { name, examDate: date });
+        setCourses(await listCourses());
+        setSettingsId(null);
+      } catch (e) {
+        setStatus(`코스를 수정하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    },
+    [],
+  );
+
+  // 코스 삭제 — Exam Radar 항목만 제거(Alt 녹음·전사는 보존). 지운 게 활성 코스면 다른 코스로 전환.
+  const handleDeleteCourse = useCallback(async (id: string) => {
+    try {
+      await deleteCourse(id);
+      const cs = await listCourses();
+      setCourses(cs);
+      setActiveId((cur) => (cur === id ? (cs[0]?.id ?? null) : cur));
+      setSettingsId(null);
+    } catch (e) {
+      setStatus(`코스를 삭제하지 못했습니다: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }, []);
+
   // 프리뷰: 데모 강의 병합으로 Accrue(코스가 자란다) + 성장 diff 시연
   const handleDemoGrow = useCallback(() => {
     const existing = new Set(topics.map((tp) => tp.name));
@@ -333,7 +365,7 @@ export default function App() {
             <div
               key={c.id}
               onClick={() => setActiveId(c.id)}
-              className="flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm"
+              className="group flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-sm"
               style={
                 c.id === activeId
                   ? { background: "var(--accent-soft)", color: "var(--accent-1)" }
@@ -341,6 +373,18 @@ export default function App() {
               }
             >
               <span className="flex-1 truncate">{c.meta.name}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSettingsId(c.id);
+                }}
+                className="shrink-0 rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+                aria-label={`${c.meta.name} 설정`}
+                title="코스 설정"
+              >
+                <Settings className="size-3.5" />
+              </button>
               {c.id === DEMO_COURSE_ID ? (
                 <span className="rounded border px-1 text-xs text-muted-foreground">예시</span>
               ) : null}
@@ -547,6 +591,15 @@ export default function App() {
       ) : null}
 
       {helpOpen ? <Help onClose={() => setHelpOpen(false)} /> : null}
+
+      {settingsCourse ? (
+        <CourseSettings
+          meta={settingsCourse.meta}
+          onSave={(name, date) => handleUpdateCourse(settingsCourse.id, name, date)}
+          onDelete={() => handleDeleteCourse(settingsCourse.id)}
+          onClose={() => setSettingsId(null)}
+        />
+      ) : null}
 
       {collectProgress ? <CollectProgress {...collectProgress} /> : null}
     </div>
